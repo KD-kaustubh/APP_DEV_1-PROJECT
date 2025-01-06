@@ -9,3 +9,12 @@
 - **Leaderboard**: Compare your performance with others in the global leaderboard.
 - **Achievements & Rewards**: Unlock achievements based on your performance.
 - **Social Sharing**: Share your quiz results on social media to challenge friends.
+
+
+
+**Folders Structure:**
+--------------------
+
+* **Static**: Contains all of the application's static files, such as images, CSS, and JavaScript files.
+* **Templates**: Contains all of the application's HTML templates.
+* **Backend**: Contains all of the Flask code for the application.
