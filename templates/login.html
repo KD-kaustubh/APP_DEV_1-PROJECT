@@ -14,19 +14,22 @@
         </div>
         <div class="my_panel">
             <div class="center">Login</div>
+            <!-- login form -->
+            <form action="/login" method="POST">
             <div class="input_form">
                 <div class="mb-3">
                     <label for="user_name" class="form-label">User Name (e-mail)</label>
-                    <input type="email" class="form-control" id="user_name" placeholder="user@gmail.com">
+                    <input type="email" class="form-control" name="user_name" id="user_name" placeholder="user@gmail.com">
                 </div>
                 <div class="mb-3">
                     <label for="password" class="form-label">Password</label>
-                    <input type="password" class="form-control" id="password" placeholder="password">
+                    <input type="password" class="form-control" name="password" id="password" placeholder="password">
                 </div>
                 <button type="submit" class="btn btn-primary">Login</button>
-                New User? <a href="#">Sign Up</a>
+                New User? <a href="/register">Sign Up</a>
             </div>
         </div>
+        </form>
     </div>
 </body>
 </html>
