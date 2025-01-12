@@ -51,3 +51,9 @@ body {
     text-align: center;
     margin: 20px 0;
   }
+
+.err_msg{
+  text-align: center;
+  color: red;
+  margin : auto
+}

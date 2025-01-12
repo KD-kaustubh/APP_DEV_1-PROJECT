@@ -19,6 +19,8 @@ def signin():
         usr= User.query.filter_by(username=uname,password=pwd).first()
         if usr and usr.role==0: #existed and admin
             return render_template('admin_dashboard.html')
+        if usr and usr.role==1: #existed and user
+            return render_template('user_dashboard.html')
 
     return render_template('login.html')
 
@@ -35,5 +37,6 @@ def signup():
         db.session.add(new_usr)
         db.session.commit()
         return render_template('login.html')
+    
     return render_template('signup.html')
 
