@@ -1,43 +1,10 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <title>Admin Page</title>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
-  <link rel="stylesheet" href="/static/styles/main.css">
-</head>
-
-<body>
-  <!-- Navigation Bar -->
-  <nav class="navbar navbar-expand-sm navbar-light bg-primary text-white">
-    <div class="container">
-      <a class="navbar-brand text-white" href="#">Welcome Admin</a>
-      <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="collapse"
-        data-bs-target="#collapsibleNavId" aria-controls="collapsibleNavId" aria-expanded="false"
-        aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="collapsibleNavId">
-        <ul class="navbar-nav me-auto mt-2 mt-lg-0">
-          <li class="nav-item"><a class="nav-link text-white" href="#">Home</a></li>
-          <li class="nav-item"><a class="nav-link text-white" href="#">Summary</a></li>
-          <li class="nav-item"><a class="nav-link text-white" href="#">Quiz</a></li>
-          <li class="nav-item"><a class="nav-link text-white" href="#">Logout</a></li>
-        </ul>
-        <form class="d-flex my-2 my-lg-0">
-          <input class="form-control me-sm-2" type="text" placeholder="Search" />
-          <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Search</button>
-        </form>
-      </div>
-    </div>
-  </nav>
-
+{%extends 'admin_layout.html'%} <!--extends admin layout-->
+{%block content%}
   <!-- Admin Dashboard -->
   <div class="container">
+  {% if subjects %}
     <div class="row">
+    {% for subject in subjects %}
       <!-- Subject Card 1 -->
       <div class="col-md-6 col-lg-4">
         <div class="card">
@@ -52,31 +19,12 @@
           </div>
         </div>
       </div>
-      <!-- Subject Card 2 -->
-      <div class="col-md-6 col-lg-4">
-        <div class="card">
-          <img src="/static/images/R.png" class="card-img-top" alt="Subject 2" />
-          <div class="card-body">
-            <h5 class="card-title">Subject 2</h5>
-            <p class="card-text">
-              Some quick example text to build on the card title and make up
-              the bulk of the card's content.
-            </p>
-            <button type="button" class="btn btn-outline-primary">+Add Chapters</button>
-          </div>
-        </div>
-      </div>
+    {% endfor %}
     </div>
+  {%else%}
+    <h3 class="center">No Subjects Found</h3>
     <!-- Add New Subjects Button -->
-    <div class="center">
-      <button type="button" class="btn btn-primary">+ADD NEW SUBJECTS</button>
-    </div>
+    <div class="center"><button type="button" class="btn btn-primary">+ADD NEW SUBJECTS</button></div>
   </div>
-
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-cn7l7gDp0eyvrjt6K1B0OJkh8z2DfyF6Lg9tvOJMXx5GpGjn1toDIFbqOtNJ8L8d"
-    crossorigin="anonymous"></script>
-</body>
-
-</html>
+  {%endif%}
+{%endblock content%}
