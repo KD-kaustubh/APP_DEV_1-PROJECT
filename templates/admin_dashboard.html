@@ -10,11 +10,14 @@
         <div class="card">
           <img src="/static/images/R.png" class="card-img-top" alt="Subject 1" />
           <div class="card-body">
-            <h5 class="card-title">Subject 1</h5>
+            <h5 class="card-title">{{subject.name}}</h5>
             <p class="card-text">
-              Some quick example text to build on the card title and make up
-              the bulk of the card's content.
+              {{subject.description}}
             </p>
+            {%if subject.chapters%}
+            <table>
+              <tr><th>ID</th><th>Name of chapter</th></tr>
+            </table>
             <button type="button" class="btn btn-outline-primary">+Add Chapters</button>
           </div>
         </div>
