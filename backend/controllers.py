@@ -19,10 +19,12 @@ def signin():
         usr= User.query.filter_by(username=uname,password=pwd).first()
         if usr and usr.role==0: #existed and admin
             return render_template('admin_dashboard.html')
-        if usr and usr.role==1: #existed and user
+        elif usr and usr.role==1: #existed and user
             return render_template('user_dashboard.html')
+        else:
+            return render_template('login.html',err_msg="Invalid User Credentials")#invalid user it will return login page with error message
 
-    return render_template('login.html')
+    return render_template('login.html',err_msg="")
 
 @app.route('/register',methods=['GET','POST'])
 def signup():
@@ -33,10 +35,13 @@ def signup():
         qualification=request.form.get('qualification')
         dob=request.form.get('dob')
         dob_date = datetime.strptime(dob, '%Y-%m-%d').date()
+        usr= User.query.filter_by(username=uname,password=pwd).first()
+        if usr:
+            return render_template('signup.html',err_msg="User Already Exists")
         new_usr=User(username=uname,password=pwd,full_name=full_name,qualification=qualification,dob=dob_date)
         db.session.add(new_usr)
         db.session.commit()
-        return render_template('login.html')
+        return render_template('login.html',err_msg="Registration Successful, Please Login")
     
-    return render_template('signup.html')
+    return render_template('signup.html',err_msg="")
 
