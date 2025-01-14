@@ -1,33 +1,35 @@
-{%extends 'admin_layout.html'%} <!--extends admin layout-->
-{%block content%}
+{% extends 'admin_layout.html' %} <!-- Extends admin layout -->
+{% block content %}
   <!-- Admin Dashboard -->
   <div class="container">
-  {% if subjects %}
-    <div class="row">
-    {% for subject in subjects %}
-      <!-- Subject Card 1 -->
-      <div class="col-md-6 col-lg-4">
-        <div class="card">
-          <img src="/static/images/R.png" class="card-img-top" alt="Subject 1" />
-          <div class="card-body">
-            <h5 class="card-title">{{subject.name}}</h5>
-            <p class="card-text">
-              {{subject.description}}
-            </p>
-            {%if subject.chapters%}
-            <table>
-              <tr><th>ID</th><th>Name of chapter</th></tr>
-            </table>
-            <button type="button" class="btn btn-outline-primary">+Add Chapters</button>
+    {% if subjects %}
+      <div class="row">
+        {% for subject in subjects %}
+          <!-- Subject Card -->
+          <div class="col-md-6 col-lg-4">
+            <div class="card">
+              <img src="/static/images/R.png" class="card-img-top" alt="Subject 1" />
+              <div class="card-body">
+                <h5 class="card-title">{{ subject.name }}</h5>
+                <p class="card-text">
+                  {{ subject.description }}
+                </p>
+                {% if subject.chapters %}
+                  <table>
+                    <tr><th>ID</th><th>Name of chapter</th></tr>
+                    <!-- Add code to loop over chapters here if needed -->
+                  </table>
+                  <button type="button" class="btn btn-outline-primary">+ Add Chapters</button>
+                {% endif %}
+              </div>
+            </div>
           </div>
-        </div>
+        {% endfor %}
       </div>
-    {% endfor %}
-    </div>
-  {%else%}
-    <h3 class="center">No Subjects Found</h3>
-    <!-- Add New Subjects Button -->
-    <div class="center"><button type="button" class="btn btn-primary">+ADD NEW SUBJECTS</button></div>
-  </div>
-  {%endif%}
-{%endblock content%}
+    {% else %}
+      <h3 class="center">No Subjects Found</h3>
+      <!-- Add New Subjects Button -->
+      <div class="center"><button type="button" class="btn btn-primary">+ Add New Subject</button></div>
+    {% endif %}
+  </div> <!-- Closing the container div here -->
+{% endblock %}
