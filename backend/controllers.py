@@ -1,6 +1,6 @@
 #App Routes
 
-from flask import Flask,render_template,request
+from flask import Flask,render_template,request,redirect,url_for
 from .models import *
 from flask import current_app as app
 from datetime import datetime
@@ -18,9 +18,9 @@ def signin():
         pwd=request.form.get('password')
         usr= User.query.filter_by(username=uname,password=pwd).first()
         if usr and usr.role==0: #existed and admin
-            return render_template('admin_dashboard.html')
+            return redirect(url_for('admin_dashboard',name=uname)) #render_template('admin_dashboard.html',name=uname)
         elif usr and usr.role==1: #existed and user
-            return render_template('user_dashboard.html')
+            return redirect(url_for('user_dashboard',name=uname)) #render_template('user_dashboard.html',name=uname)
         else:
             return render_template('login.html',err_msg="Invalid User Credentials")#invalid user it will return login page with error message
 
@@ -45,3 +45,31 @@ def signup():
     
     return render_template('signup.html',err_msg="")
 
+#common rotes for admin dashboard
+@app.route('/admin_dashboard/<name>',methods=['GET','POST'])
+def admin_dashboard(name):
+    subjects=get_subjects()
+    return render_template('admin_dashboard.html',name=name,subjects=subjects)
+
+#comman routes for user dashboard
+@app.route('/user_dashboard/<name>',methods=['GET','POST'])
+def user_dashboard(name):
+    return render_template('user_dashboard.html',name=name)
+
+#addsubject routes
+@app.route('/add_subjects/<name>',methods=['GET','POST'])
+def add_subjects(name):
+    if request.method == 'POST':
+        sub_ID=request.form.get('subject_ID')
+        sub_name=request.form.get('subject_name')
+        sub_description=request.form.get('subject_description')
+        new_sub=Subject(subject_ID=sub_ID,subject_name=sub_name,subject_description=sub_description)
+        db.session.add(new_sub)
+        db.session.commit()
+        return redirect(url_for('admin_dashboard',name=name))
+    
+    return render_template('add_subjects.html',name=name)
+
+def get_subjects():
+    subjects=Subject.query.all()
+    return subjects 
