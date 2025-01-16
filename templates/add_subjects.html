@@ -9,7 +9,7 @@
             <h4>Add Subjects</h4>
           </div>
           <div class="card-body">
-            <form action="/add_subjects" method="POST">
+            <form action="/add_subjects/{{name}}" method="POST">
               <div class="mb-3">
                 <label for="subject_id" class="form-label">Subject ID</label>
                 <input type="number" class="form-control" name="subject_id" id="subject_id" placeholder="1" required>
@@ -24,7 +24,7 @@
               </div>
               <div class="mb-3 d-flex justify-content-between">
                 <button type="submit" class="btn btn-primary">Submit</button>
-                <a href="/login" type="button" class="btn btn-primary">Cancel</a>
+                <a href="/admin_dashboard/{{name}}" type="button" class="btn btn-primary">Cancel</a>
               </div>
             </form>
           </div>

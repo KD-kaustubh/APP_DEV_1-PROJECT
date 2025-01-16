@@ -51,7 +51,7 @@ def admin_dashboard(name):
     subjects=get_subjects()
     return render_template('admin_dashboard.html',name=name,subjects=subjects)
 
-#comman routes for user dashboard
+#common routes for user dashboard
 @app.route('/user_dashboard/<name>',methods=['GET','POST'])
 def user_dashboard(name):
     return render_template('user_dashboard.html',name=name)
@@ -63,7 +63,7 @@ def add_subjects(name):
         sub_ID=request.form.get('subject_ID')
         sub_name=request.form.get('subject_name')
         sub_description=request.form.get('subject_description')
-        new_sub=Subject(subject_ID=sub_ID,subject_name=sub_name,subject_description=sub_description)
+        new_sub=Subject(id=sub_ID,name=sub_name,description=sub_description)
         db.session.add(new_sub)
         db.session.commit()
         return redirect(url_for('admin_dashboard',name=name))
