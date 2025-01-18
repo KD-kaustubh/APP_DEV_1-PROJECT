@@ -60,20 +60,16 @@ def user_dashboard(name):
 @app.route('/add_subjects/<name>',methods=['GET','POST'])
 def add_subjects(name):
     if request.method == 'POST':
-        sub_ID=request.form.get('subject_ID')
         sub_name=request.form.get('subject_name')
         sub_description=request.form.get('subject_description')
-        new_sub=Subject(id=sub_ID,name=sub_name,description=sub_description)
+        new_sub=Subject(name=sub_name,description=sub_description)
         db.session.add(new_sub)
         db.session.commit()
         return redirect(url_for('admin_dashboard',name=name))
     
     return render_template('add_subjects.html',name=name)
 
-def get_subjects():
-    subjects=Subject.query.all()
-    return subjects 
-
+#addchapters routes
 @app.route('/add_chapters/<chapter_id>/<name>',methods=['GET','POST'])
 def add_chapters(name,chapter_id):
     if request.method == 'POST':
@@ -85,3 +81,61 @@ def add_chapters(name,chapter_id):
         return redirect(url_for('admin_dashboard',name=name))
     
     return render_template('add_chapters.html',name=name,chapter_id=chapter_id)
+
+#searching routes
+@app.route('/search/<name>',methods=['GET','POST'])
+def search(name):
+    if request.method == 'POST':
+        search_txt=request.form.get('search_txt')
+        by_subject=search_by_subject(search_txt)
+        by_chapter=search_by_chapter(search_txt)
+        if by_subject:
+            return render_template('admin_dashboard.html',name=name,subjects=by_subject)
+        elif by_chapter:
+            return render_template('admin_dashboard.html',name=name,subjects=by_chapter)
+    return redirect(url_for('admin_dashboard',name=name))
+
+#edit routes
+@app.route('/edit_subject/<id>/<name>', methods=['GET', 'POST'])
+def edit_subject(id, name):
+    if request.method == 'POST':
+        subject = Subject.query.get(id)
+        subject.name = request.form.get('subject_name')
+        subject.description = request.form.get('subject_description')
+        db.session.commit()
+        return redirect(url_for('admin_dashboard', name=name))
+    return render_template('edit_subject.html', name=name, subject=Subject.query.get(id))
+
+#delete subject
+@app.route('/delete_subject/<id>/<name>', methods=['POST'])
+def delete_subject(id, name):    
+    subject = Subject.query.get(id)
+    db.session.delete(subject)
+    db.session.commit()
+    return redirect(url_for('admin_dashboard', name=name))
+#add java script for pop up for r usure trot delete subject
+
+#edit chapter routes incomplete
+@app.route('/edit_chapter/<id>/<name>', methods=['GET', 'POST'])
+def edit_chapter(id, name):
+    if request.method == 'POST':
+        chapter = Chapter.query.get(id)
+        chapter.name = request.form.get('chapter_name')
+        chapter.description = request.form.get('chapter_description')
+        db.session.commit()
+        return redirect(url_for('admin_dashboard', name=name))
+    return render_template('edit_chapter.html', name=name, chapter=Chapter.query.get(id))
+
+#other supported functions
+def get_subjects():
+    subjects=Subject.query.all()
+    return subjects 
+
+def search_by_subject(search_txt):
+    subjects=Subject.query.filter(Subject.name.ilike(f"%{search_txt}%")).all()
+    return subjects
+
+def search_by_chapter(search_txt):
+    chapters=Chapter.query.filter(Chapter.name.ilike(f"%{search_txt}%")).all()
+    subjects=[chapter.subject for chapter in chapters]
+    return subjects

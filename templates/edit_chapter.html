@@ -1,0 +1,39 @@
+{% extends "admin_layout.html" %}
+
+{% block content %}
+    {% if chapter %}
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header text-center">
+                            <h4>Edit Chapter</h4>
+                        </div>
+                        <div class="card-body">
+                            <form action="/edit_chapter/{{chapter.id}}/{{name}}" method="POST">
+                                <div class="mb-3">
+                                    <label for="chapter_name" class="form-label">Chapter Name</label>
+                                    <input type="text" class="form-control" name="chapter_name" id="chapter_name" value="{{chapter.name}}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="chapter_description" class="form-label">Chapter Description</label>
+                                    <input type="text" class="form-control" name="chapter_description" id="chapter_description" value="{{chapter.description}}" required>
+                                </div>
+                                <div class="mb-3 d-flex justify-content-between">
+                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                    
+                                    <!-- Delete Button Form -->
+                                    <form action="/delete_chapter/{{chapter.id}}/{{name}}" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn btn-danger">Delete</button>
+                                    </form>
+
+                                    <a href="/admin_dashboard/{{name}}" type="button" class="btn btn-secondary">Cancel</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

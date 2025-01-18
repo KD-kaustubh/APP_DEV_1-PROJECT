@@ -10,7 +10,7 @@
             <div class="card">
               <img src="/static/images/R.png" class="card-img-top" alt="Subject 1" />
               <div class="card-body">
-                <h5 class="card-title">{{ subject.name }}</h5>
+                <h5 class="card-title"><a href="/edit_subject/{{ subject.id }}/{{ name }}">{{ subject.name }}</a></h5>
                 <p class="card-text">
                   {{ subject.description }}
                 </p>
@@ -18,7 +18,7 @@
                   <table>
                     <tr><th>ID</th><th></th><th>Name of chapter</th></tr>
                     {% for chapter in subject.chapters %}
-                      <tr><td>{{ chapter.id }}</td><td></td><td>{{ chapter.name }}</td></tr>
+                      <tr><td><a href="/edit_chapter/{{ chapter.id }}/{{ name }}"></a>{{ chapter.id }}</td><td></td><td>{{ chapter.name }}</td></tr>
                     {% endfor %}
                   </table>
                 {% else %}
