@@ -56,7 +56,7 @@ def admin_dashboard(name):
 def user_dashboard(name):
     return render_template('user_dashboard.html',name=name)
 
-#addsubject routes
+#add_subject routes
 @app.route('/add_subjects/<name>',methods=['GET','POST'])
 def add_subjects(name):
     if request.method == 'POST':
@@ -69,7 +69,7 @@ def add_subjects(name):
     
     return render_template('add_subjects.html',name=name)
 
-#addchapters routes
+#add_chapters routes
 @app.route('/add_chapters/<chapter_id>/<name>',methods=['GET','POST'])
 def add_chapters(name,chapter_id):
     if request.method == 'POST':
@@ -95,7 +95,7 @@ def search(name):
             return render_template('admin_dashboard.html',name=name,subjects=by_chapter)
     return redirect(url_for('admin_dashboard',name=name))
 
-#edit routes
+#edit_subject routes
 @app.route('/edit_subject/<id>/<name>', methods=['GET', 'POST'])
 def edit_subject(id, name):
     if request.method == 'POST':
@@ -107,13 +107,21 @@ def edit_subject(id, name):
     return render_template('edit_subject.html', name=name, subject=Subject.query.get(id))
 
 #delete subject
-@app.route('/delete_subject/<id>/<name>', methods=['POST'])
+@app.route('/delete_subject/<id>/<name>', methods=['GET', 'POST'])
 def delete_subject(id, name):    
     subject = Subject.query.get(id)
     db.session.delete(subject)
     db.session.commit()
     return redirect(url_for('admin_dashboard', name=name))
-#add java script for pop up for r usure trot delete subject
+
+#delete chapter
+@app.route('/delete_chapter/<id>/<name>', methods=['GET', 'POST'])
+def delete_chapter(id, name):    
+    chapter = Chapter.query.get(id)
+    db.session.delete(chapter)
+    db.session.commit()
+    return redirect(url_for('admin_dashboard', name=name))
+
 
 #edit chapter routes incomplete
 @app.route('/edit_chapter/<id>/<name>', methods=['GET', 'POST'])
@@ -125,6 +133,25 @@ def edit_chapter(id, name):
         db.session.commit()
         return redirect(url_for('admin_dashboard', name=name))
     return render_template('edit_chapter.html', name=name, chapter=Chapter.query.get(id))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #other supported functions
 def get_subjects():
