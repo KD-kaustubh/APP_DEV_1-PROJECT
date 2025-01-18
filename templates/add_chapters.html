@@ -1,0 +1,35 @@
+{% extends "admin_layout.html" %}
+
+{% block content %}
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header text-center">
+            <h4>Add Chapters</h4>
+          </div>
+          <div class="card-body">
+            <form action="/add_chapters/{{chapter_id}}/{{name}}" method="POST">
+              <div class="mb-3">
+                <label for="chapter_id" class="form-label">chapter ID</label>
+                <input type="number" class="form-control" name="chapter_id" id="chapter_id" value="{{chapter_id}}" readonly>
+              </div>
+              <div class="mb-3">
+                <label for="chapter_name" class="form-label">Chapter Name</label>
+                <input type="text" class="form-control" name="chapter_name" id="chapter_name" placeholder="chapter Name" required>
+              </div>
+              <div class="mb-3">
+                <label for="chapter_description" class="form-label">Chapter Description</label>
+                <input type="text" class="form-control" name="chapter_description" id="chapter_description" placeholder="chapter Description" required>
+              </div>
+              <div class="mb-3 d-flex justify-content-between">
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <a href="/admin_dashboard/{{name}}" type="button" class="btn btn-primary">Cancel</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

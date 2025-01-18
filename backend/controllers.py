@@ -73,3 +73,15 @@ def add_subjects(name):
 def get_subjects():
     subjects=Subject.query.all()
     return subjects 
+
+@app.route('/add_chapters/<chapter_id>/<name>',methods=['GET','POST'])
+def add_chapters(name,chapter_id):
+    if request.method == 'POST':
+        chapter_name=request.form.get('chapter_name')
+        chapter_description=request.form.get('chapter_description')
+        new_chapter=Chapter(subject_id=chapter_id,name=chapter_name,description=chapter_description)
+        db.session.add(new_chapter)
+        db.session.commit()
+        return redirect(url_for('admin_dashboard',name=name))
+    
+    return render_template('add_chapters.html',name=name,chapter_id=chapter_id)
