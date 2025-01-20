@@ -1,0 +1,41 @@
+{% extends 'admin_layout.html' %} <!-- Extends admin layout -->
+{% block content %}
+  <!-- Admin Dashboard -->
+  <div class="container">
+    {% if quizzes %}
+      <div class="row">
+        {% for quiz in quizzes %}
+          <!-- Quiz Card -->
+          <div class="col-md-6 col-lg-4">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">
+                  {{ quiz.name }}
+                </h5>
+                <p class="card-text">
+                  Chapter: {{ quiz.chapter_name }}<br>
+                  Date: {{ quiz.date_of_quiz }}<br>
+                  Duration: {{ quiz.time_duration }} mins<br>
+                  Remarks: {{ quiz.remarks }}
+                </p>
+                <div class="d-flex justify-content-between">
+                  <!-- Edit button for quiz -->
+                  <a href="/edit_quiz/{{ quiz.id }}/{{ name }}" class="btn btn-warning btn-sm">Edit</a>
+                  <!-- Delete button for quiz -->
+                  <a href="/delete_quiz/{{ quiz.id }}/{{ name }}" class="btn btn-danger btn-sm" 
+                     onclick="return confirm('Are you sure you want to delete this quiz?')">Delete</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <!-- No Quizzes Found -->
+      <h3 class="center">No Quizzes Found</h3>
+    {% endif %}
+    <div class="center">
+      <a href="/add_quiz/{{ chapter_id }}/{{ name }}" type="button" class="btn btn-primary">+ Add New Quiz</a>
+    </div>
+  </div> <!-- Closing the container div here -->
+{% endblock %}

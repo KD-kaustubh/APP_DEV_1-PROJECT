@@ -1,0 +1,53 @@
+{% extends "admin_layout.html" %}
+
+{% block content %}
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header text-center">
+            <h4>Add Quiz</h4>
+          </div>
+          <div class="card-body">
+            <form action="/add_quiz/{{chapter_id or 'select'}}/{{name}}" method="POST">
+              <div class="mb-3">
+                <label for="quiz_name" class="form-label">Quiz Name</label>
+                <input type="text" class="form-control" name="quiz_name" id="quiz_name" placeholder="Quiz Name" required>
+              </div>
+              <div class="mb-3">
+                <label for="date_of_quiz" class="form-label">Date of Quiz</label>
+                <input type="date" class="form-control" name="date_of_quiz" id="date_of_quiz" required>
+              </div>
+              <div class="mb-3">
+                <label for="time_duration" class="form-label">Time Duration (in minutes)</label>
+                <input type="number" class="form-control" name="time_duration" id="time_duration" placeholder="Time Duration" required>
+              </div>
+              <div class="mb-3">
+                <label for="remarks" class="form-label">Remarks</label>
+                <textarea class="form-control" name="remarks" id="remarks" rows="3" placeholder="Additional Remarks" required></textarea>
+              </div>
+
+              <!-- If chapter_id is not passed, show a select dropdown for chapters -->
+              {% if not chapter_id %}
+                <div class="mb-3">
+                  <label for="chapter_id" class="form-label">Select Chapter</label>
+                  <select class="form-control" name="chapter_id" id="chapter_id" required>
+                    <option value="">Select a Chapter</option>
+                    {% for chapter in chapters %}
+                      <option value="{{ chapter.id }}">{{ chapter.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              {% endif %}
+
+              <div class="mb-3 d-flex justify-content-between">
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <a href="/admin_dashboard/{{name}}" type="button" class="btn btn-secondary">Cancel</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

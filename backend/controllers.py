@@ -122,8 +122,7 @@ def delete_chapter(id, name):
     db.session.commit()
     return redirect(url_for('admin_dashboard', name=name))
 
-
-#edit chapter routes incomplete
+#edit chapter routes 
 @app.route('/edit_chapter/<id>/<name>', methods=['GET', 'POST'])
 def edit_chapter(id, name):
     if request.method == 'POST':
@@ -134,7 +133,29 @@ def edit_chapter(id, name):
         return redirect(url_for('admin_dashboard', name=name))
     return render_template('edit_chapter.html', name=name, chapter=Chapter.query.get(id))
 
+#add quiz routes
+@app.route('/add_quiz/<chapter_id>/<name>',methods=['GET','POST'])
+def add_quiz(name,chapter_id=None):
+    if not chapter_id:
+        chapters=Chapter.query.all()
+        return render_template('add_quiz.html',name=name,chapters=chapters)
+    if request.method == 'POST':
+        quiz_name=request.form.get('quiz_name')
+        date=request.form.get('date_of_quiz')
+        date_of_quiz=datetime.strptime(date, '%Y-%m-%d').date()
+        time_duration=request.form.get('time_duration')
+        remarks=request.form.get('remarks')
+        new_quiz=Quiz(chapter_id=chapter_id,name=quiz_name,date_of_quiz=date_of_quiz,time_duration=time_duration,remarks=remarks)
+        db.session.add(new_quiz)
+        db.session.commit()
+        return redirect(url_for('admin_dashboard',name=name))
+    
+    return render_template('add_quiz.html',name=name,chapter_id=chapter_id)
 
+#quiz dashboard
+@app.route('/quiz/<name>',methods=['GET','POST'])
+def quiz(name):
+    return render_template('quiz.html',name=name)
 
 
 

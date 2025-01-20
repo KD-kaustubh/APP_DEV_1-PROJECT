@@ -51,6 +51,7 @@ class Quiz(db.Model):
     __tablename__ = "quiz"
     id = db.Column(db.Integer, primary_key=True)
     chapter_id = db.Column(db.Integer, db.ForeignKey("chapter.id"), nullable=False)
+    name=db.Column(db.String(80), nullable=False)
     date_of_quiz = db.Column(db.Date, nullable=False)
     time_duration = db.Column(db.String(80), nullable=False)  #time in hh:mm
     remarks = db.Column(db.String(200),nullable=False)

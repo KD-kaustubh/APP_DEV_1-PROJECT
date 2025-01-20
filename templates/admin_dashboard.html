@@ -29,7 +29,7 @@
                       <tr>
                         <th>ID</th>
                         <th>Name of Chapter</th>
-                        <th>Actions</th> <!-- Adding the Actions column -->
+                        <th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -45,13 +45,19 @@
                                onclick="return confirm('Are you sure you want to delete this chapter?')">Delete</a>
                           </td>
                         </tr>
+                        <tr>
+                          <td colspan="3">
+                            <div class="d-flex justify-content-between align-items-center">
+                              <a href="/add_quiz/{{ chapter.id }}/{{ name }}" class="btn btn-primary btn-sm">+ Add Quiz</a>
+                            </div>
+                          </td>
+                        </tr>
                       {% endfor %}
                     </tbody>
                   </table>
                 {% else %}
                   <p>No chapters found</p>
                 {% endif %}
-                
                 <div class="center"><a href="/add_chapters/{{ subject.id }}/{{ name }}" type="button" class="btn btn-outline-primary">+ Add Chapters</a></div>
               </div>
             </div>
@@ -61,8 +67,7 @@
     {% else %}
       <!-- No Subjects Found -->
       <h3 class="center">No Subjects Found</h3>
-      <!-- Add New Subjects Button -->
-    {% endif %} 
+    {% endif %}
     <div class="center">
       <a href="/add_subjects/{{ name }}" type="button" class="btn btn-primary">+ Add New Subject</a>
     </div>
