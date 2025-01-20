@@ -35,8 +35,14 @@
                 <input type="text" class="form-control" name="correct_answer" id="correct_answer" required placeholder="Correct Answer">
               </div>
               <div class="mb-3 d-flex justify-content-between">
-                <button type="submit" class="btn btn-primary">Submit</button>
-                <a href="/quiz/{{ name }}" type="button" class="btn btn-secondary">Cancel</a>
+                <!-- save next  -->
+                <button type="submit" name="action" value="save_next" class="btn btn-success">Save and Next</button>
+
+                <!-- submit-->
+                <button type="submit" name="action" value="submit" class="btn btn-primary">Submit</button>
+
+                <!-- cancel  -->
+                <a href="/quiz/{{ name }}" type="button" class="btn btn-primary">Cancel</a>
               </div>
             </form>
           </div>

@@ -168,12 +168,17 @@ def add_question(name,quiz_id):
         option3=request.form.get('option3')
         option4=request.form.get('option4')
         answer=request.form.get('correct_answer')
-        new_question=Question(quiz_id=quiz_id,question=question_statement,option1=option1,option2=option2,option3=option3,option4=option4,answer=answer)
+        new_question=Question(quiz_id=quiz_id,question_statement=question_statement,option1=option1,option2=option2,option3=option3,option4=option4,correct_answer=answer)
         db.session.add(new_question)
         db.session.commit()
-        return redirect(url_for('admin_dashboard',name=name))
+        
+        action=request.form.get('action')
+        if action=='save_next':
+            return redirect(url_for('add_question',name=name,quiz_id=quiz_id))
+        elif action=='submit':
+            return redirect(url_for('quiz',name=name))
     
-    return render_template('add_question.html',name=name,quiz_id=quiz_id)
+    return render_template('add_question.html',name=name,quiz_id=quiz_id,quiz=Quiz.query.get(quiz_id))
 
 #edit quiz
 @app.route('/edit_quiz/<id>/<name>', methods=['GET', 'POST'])
