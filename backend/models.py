@@ -59,7 +59,7 @@ class Quiz(db.Model):
     # relations define here
     questions = db.relationship("Question", backref="quiz", lazy=True, cascade="all,delete")
     scores = db.relationship("Score", backref="quiz", lazy=True, cascade="all,delete")
-
+    
 # Question modal
 class Question(db.Model):
     __tablename__ = "question"

@@ -133,7 +133,7 @@ def edit_chapter(id, name):
         return redirect(url_for('admin_dashboard', name=name))
     return render_template('edit_chapter.html', name=name, chapter=Chapter.query.get(id))
 
-#add quiz routes
+#add quiz routes not completed
 @app.route('/add_quiz/<chapter_id>/<name>',methods=['GET','POST'])
 def add_quiz(name,chapter_id=None):
     if not chapter_id:
@@ -155,11 +155,47 @@ def add_quiz(name,chapter_id=None):
 #quiz dashboard
 @app.route('/quiz/<name>',methods=['GET','POST'])
 def quiz(name):
-    return render_template('quiz.html',name=name)
+    quizzes=Quiz.query.all()
+    return render_template('quiz_dashboard.html',name=name,Quizzes=quizzes)
 
+#add question not running
+@app.route('/add_question/<quiz_id>/<name>',methods=['GET','POST'])
+def add_question(name,quiz_id):
+    if request.method == 'POST':
+        question_statement=request.form.get('question_statement')
+        option1=request.form.get('option1')
+        option2=request.form.get('option2')
+        option3=request.form.get('option3')
+        option4=request.form.get('option4')
+        answer=request.form.get('correct_answer')
+        new_question=Question(quiz_id=quiz_id,question=question_statement,option1=option1,option2=option2,option3=option3,option4=option4,answer=answer)
+        db.session.add(new_question)
+        db.session.commit()
+        return redirect(url_for('admin_dashboard',name=name))
+    
+    return render_template('add_question.html',name=name,quiz_id=quiz_id)
 
+#edit quiz
+@app.route('/edit_quiz/<id>/<name>', methods=['GET', 'POST'])
+def edit_quiz(id, name):
+    if request.method == 'POST':
+        quiz = Quiz.query.get(id)
+        quiz.name = request.form.get('quiz_name')
+        quiz.date_of_quiz = request.form.get('date_of_quiz')
+        quiz.date_of_quiz = datetime.strptime(quiz.date_of_quiz, '%Y-%m-%d').date()
+        quiz.time_duration = request.form.get('time_duration')
+        quiz.remarks = request.form.get('remarks')
+        db.session.commit()
+        return redirect(url_for('quiz', name=name))
+    return render_template('edit_quiz.html', name=name, quiz=Quiz.query.get(id))
 
-
+#delete quiz
+@app.route('/delete_quiz/<id>/<name>', methods=['GET', 'POST'])
+def delete_quiz(id, name):    
+    quiz = Quiz.query.get(id)
+    db.session.delete(quiz)
+    db.session.commit()
+    return redirect(url_for('quiz', name=name))
 
 
 

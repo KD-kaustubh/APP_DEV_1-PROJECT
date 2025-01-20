@@ -1,0 +1,41 @@
+{% extends "admin_layout.html" %}
+
+{% block content %}
+  {% if quiz %}
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header text-center">
+              <h4>Edit Quiz</h4>
+            </div>
+            <div class="card-body">
+              <form action="/edit_quiz/{{ quiz.id }}/{{ name }}" method="POST">
+                <div class="mb-3">
+                  <label for="quiz_name" class="form-label">Quiz Name</label>
+                  <input type="text" class="form-control" name="quiz_name" id="quiz_name" value="{{ quiz.name }}" required>
+                </div>
+                <div class="mb-3">
+                  <label for="date_of_quiz" class="form-label">Date of Quiz</label>
+                  <input type="date" class="form-control" name="date_of_quiz" id="date_of_quiz" value="{{ quiz.date_of_quiz }}" required>
+                </div>
+                <div class="mb-3">
+                  <label for="time_duration" class="form-label">Duration (minutes)</label>
+                  <input type="number" class="form-control" name="time_duration" id="time_duration" value="{{ quiz.time_duration }}" required>
+                </div>
+                <div class="mb-3">
+                  <label for="remarks" class="form-label">Remarks</label>
+                  <textarea class="form-control" name="remarks" id="remarks" rows="3" required>{{ quiz.remarks }}</textarea>
+                </div>
+                <div class="mb-3 d-flex justify-content-between">
+                  <button type="submit" class="btn btn-success">Save</button>
+                  <a href="/quiz/{{ name }}" type="button" class="btn btn-primary">Cancel</a>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}
