@@ -9,6 +9,18 @@
             <h4>Add Quiz</h4>
           </div>
           <div class="card-body">
+
+            <!-- Flash -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                <div class="alert alert-success">
+                  {% for category, message in messages %}
+                    <p>{{ message }}</p>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
+
             <form action="/add_quiz/{{chapter_id or 'select'}}/{{name}}" method="POST">
               <div class="mb-3">
                 <label for="quiz_name" class="form-label">Quiz Name</label>
@@ -26,19 +38,6 @@
                 <label for="remarks" class="form-label">Remarks</label>
                 <textarea class="form-control" name="remarks" id="remarks" rows="3" placeholder="Additional Remarks" required></textarea>
               </div>
-
-              <!-- If chapter_id is not passed, show a select dropdown for chapters -->
-              {% if not chapter_id %}
-                <div class="mb-3">
-                  <label for="chapter_id" class="form-label">Select Chapter</label>
-                  <select class="form-control" name="chapter_id" id="chapter_id" required>
-                    <option value="">Select a Chapter</option>
-                    {% for chapter in chapters %}
-                      <option value="{{ chapter.id }}">{{ chapter.name }}</option>
-                    {% endfor %}
-                  </select>
-                </div>
-              {% endif %}
 
               <div class="mb-3 d-flex justify-content-between">
                 <button type="submit" class="btn btn-primary">Submit</button>

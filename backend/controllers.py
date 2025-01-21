@@ -1,6 +1,6 @@
 #App Routes
 
-from flask import Flask,render_template,request,redirect,url_for
+from flask import Flask,render_template,request,redirect,url_for,flash
 from .models import *
 from flask import current_app as app
 from datetime import datetime
@@ -135,10 +135,7 @@ def edit_chapter(id, name):
 
 #add quiz routes not completed
 @app.route('/add_quiz/<chapter_id>/<name>',methods=['GET','POST'])
-def add_quiz(name,chapter_id=None):
-    if not chapter_id:
-        chapters=Chapter.query.all()
-        return render_template('add_quiz.html',name=name,chapters=chapters)
+def add_quiz(name,chapter_id):
     if request.method == 'POST':
         quiz_name=request.form.get('quiz_name')
         date=request.form.get('date_of_quiz')
@@ -148,6 +145,7 @@ def add_quiz(name,chapter_id=None):
         new_quiz=Quiz(chapter_id=chapter_id,name=quiz_name,date_of_quiz=date_of_quiz,time_duration=time_duration,remarks=remarks)
         db.session.add(new_quiz)
         db.session.commit()
+        flash('Quiz added successfully!', 'success')
         return redirect(url_for('admin_dashboard',name=name))
     
     return render_template('add_quiz.html',name=name,chapter_id=chapter_id)
