@@ -7,13 +7,14 @@
           <div class="col-md-6 col-lg-4">
             <div class="card">
               <div class="card-body">
-                <h5 class="card-title">{{ quiz.name }}</h5>
-                <p class="card-text">
-                  Chapter: {{ quiz.chapter.name }}<br>
-                  Date: {{ quiz.date_of_quiz }}<br>
-                  Duration: {{ quiz.time_duration }} mins<br>
-                  Remarks: {{ quiz.remarks }}
-                </p>
+                <h5 class="card-title text-primary font-weight-bold display-6">{{ quiz.name }}</h5>
+                <ul class="list-unstyled">
+                  <li><strong>Chapter:</strong> {{ quiz.chapter.name }}</li>
+                  <li><strong>Date:</strong> {{ quiz.date_of_quiz }}</li>
+                  <li><strong>Duration:</strong> {{ quiz.time_duration }} mins</li>
+                  <li><strong>Remarks:</strong> {{ quiz.remarks }}</li>
+                  <li><strong>Number of Questions:</strong> {{ quiz.questions|length }}</li>
+                </ul>
                 <div class="d-flex justify-content-between">
                   <!-- Edit button for quiz -->
                   <a href="/edit_quiz/{{ quiz.id }}/{{ name }}" class="btn btn-warning btn-sm">Edit</a>

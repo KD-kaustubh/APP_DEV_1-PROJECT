@@ -82,18 +82,7 @@ def add_chapters(name,chapter_id):
     
     return render_template('add_chapters.html',name=name,chapter_id=chapter_id)
 
-#searching routes
-@app.route('/search/<name>',methods=['GET','POST'])
-def search(name):
-    if request.method == 'POST':
-        search_txt=request.form.get('search_txt')
-        by_subject=search_by_subject(search_txt)
-        by_chapter=search_by_chapter(search_txt)
-        if by_subject:
-            return render_template('admin_dashboard.html',name=name,subjects=by_subject)
-        elif by_chapter:
-            return render_template('admin_dashboard.html',name=name,subjects=by_chapter)
-    return redirect(url_for('admin_dashboard',name=name))
+
 
 #edit_subject routes
 @app.route('/edit_subject/<id>/<name>', methods=['GET', 'POST'])
@@ -205,13 +194,21 @@ def delete_quiz(id, name):
 
 
 
-
-
-
-
-
-
-
+#searching routes incomplete
+@app.route('/search/<name>',methods=['GET','POST'])
+def search(name):
+    if request.method == 'POST':
+        search_txt=request.form.get('search_txt')
+        by_subject=search_by_subject(search_txt)
+        by_chapter=search_by_chapter(search_txt)
+        by_quiz=search_by_quiz(search_txt)
+        if by_subject:
+            return render_template('admin_dashboard.html',name=name,subjects=by_subject)
+        elif by_chapter:
+            return render_template('admin_dashboard.html',name=name,subjects=by_chapter)
+        elif by_quiz:
+            return render_template('quiz_dashboard.html',name=name,subjects=by_quiz)
+    return redirect(url_for('admin_dashboard',name=name))
 
 #other supported functions
 def get_subjects():
@@ -225,4 +222,9 @@ def search_by_subject(search_txt):
 def search_by_chapter(search_txt):
     chapters=Chapter.query.filter(Chapter.name.ilike(f"%{search_txt}%")).all()
     subjects=[chapter.subject for chapter in chapters]
+    return subjects
+
+def search_by_quiz(search_txt):
+    quizzes=Quiz.query.filter(Quiz.name.ilike(f"%{search_txt}%")).all()
+    subjects=[quiz.chapter.subject for quiz in quizzes]
     return subjects
