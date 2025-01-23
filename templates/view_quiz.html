@@ -1,0 +1,44 @@
+{% extends "user_layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header text-center">
+          <h4>Quiz Details</h4>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label for="quiz_id" class="form-label">ID</label>
+            <input type="text" class="form-control" id="quiz_id" value="{{ quiz.id }}" readonly>
+          </div>
+          <div class="mb-3">
+            <label for="subject" class="form-label">Subject</label>
+            <input type="text" class="form-control" id="subject" value="{{ quiz.chapter.subject.name }}" readonly>
+          </div>
+          <div class="mb-3">
+            <label for="chapter" class="form-label">Chapter</label>
+            <input type="text" class="form-control" id="chapter" value="{{ quiz.chapter.name }}" readonly>
+          </div>
+          <div class="mb-3">
+            <label for="no_of_questions" class="form-label">Number of Questions</label>
+            <input type="text" class="form-control" id="no_of_questions" value="{{ quiz.questions|length }}" readonly>
+          </div>
+          <div class="mb-3">
+            <label for="scheduled_date" class="form-label">Scheduled Date</label>
+            <input type="text" class="form-control" id="scheduled_date" value="{{ quiz.date_of_quiz }}" readonly>
+          </div>
+          <div class="mb-3">
+            <label for="duration" class="form-label">Duration (hh:mm)</label>
+            <input type="text" class="form-control" id="duration" value="{{ quiz.time_duration }}" readonly>
+          </div>
+          <div class="mt-4 d-flex justify-content-center">
+            <a href="/user_dashboard/{{ name }}" class="btn btn-primary">Close</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

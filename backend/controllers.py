@@ -184,15 +184,49 @@ def delete_quiz(id, name):
     db.session.commit()
     return redirect(url_for('quiz', name=name))
 
+#view quiz
 @app.route('/view_quiz/<id>/<name>', methods=['GET', 'POST'])
 def view_quiz(id, name):    
     quiz = Quiz.query.get(id)
     return render_template('view_quiz.html', name=name,quiz=quiz)
 
+#start quiz
 @app.route('/start_quiz/<id>/<name>', methods=['GET', 'POST'])
 def start_quiz(id, name):    
     quiz = Quiz.query.get(id)
     return render_template('start_quiz.html', name=name,quiz=quiz)
+
+#submit quiz incommplete
+@app.route('/submit_quiz/<id>/<name>', methods=['GET', 'POST'])
+def submit_quiz(id, name):    
+    quiz = Quiz.query.get(id)
+    user=User.query.filter_by(username=name).first()
+
+    if quiz and user:
+        total_score=0
+        for question in quiz.questions:
+            user_answer=request.form.get(str(question.id))
+            if user_answer==question.correct_answer:
+                total_score+=1
+        new_score=Score(quiz_id=id,user_id=user.id,time_stamp_of_attempt=datetime.now(),total_score=total_score)
+        db.session.add(new_score)
+        db.session.commit()
+        return render_template('score.html', name=name,quiz=quiz,total_score=total_score)
+
+    return redirect(url_for('quiz', name=name))
+
+
+
+
+
+#SCORES
+@app.route('/scores/<name>',methods=['GET','POST'])
+def scores(name):
+    scores=Score.query.all()
+    return render_template('scores.html',name=name,scores=scores)
+
+
+
 
 
 #searching routes incomplete
