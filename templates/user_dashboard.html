@@ -1,27 +1,43 @@
 {% extends 'user_layout.html' %}
-{% block content %}
-    <!-- Content -->
-    <div class="container">
-      <div class="row">
-        <!-- First Card -->
-        <div class="col-md-6 col-lg-4">
-          <div class="card">
-            <img src="/static\images\Q.png" class="card-img-top" alt="Upcoming Quizzes" />
-            <div class="card-body">
-              <h5 class="card-title">Upcoming Quizzes</h5>
-              <p class="card-text">
-                Some quick example text to build on the card title and make up
-                the bulk of the card's content.
-              </p>
-              <div class="btn-spacing">
-                <button type="button" class="btn btn-outline-primary">View</button>
-                <button type="button" class="btn btn-outline-primary">Start</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Add New Subjects Button -->
+{% block content %}
+    <div class="container mt-4">
+        <!-- Center the heading dynamically -->
+        <div class="d-flex justify-content-center align-items-center flex-column">
+            <h2 class="text-center">Upcoming Quizzes</h2>
+        </div>
+
+        {% if quizzes %}
+        <div class="row">
+            {% for quiz in quizzes %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card">
+                    <img src="/static/images/Q.png" class="card-img-top" alt="Upcoming Quizzes" />
+                    <div class="card-body">
+                        <h4 class="card-title text-danger fw-bold">📘 {{ quiz.name }}</h4>
+                        <p class="card-text">
+                            <i class="far fa-question-circle"></i> Number of Questions: {{ quiz.questions | length }}<br>
+                            <i class="far fa-calendar-alt"></i> Scheduled Date: {{ quiz.date_of_quiz.strftime('%d/%m/%Y') }}<br>
+                            <i class="far fa-clock"></i> Duration: {{ quiz.time_duration }} minutes
+                        </p>
+                        
+                        <div class="btn-spacing">
+                            <a href="/view_quiz/{{ quiz.id }}" class="btn btn-info btn-lg w-100">
+                                <i class="fas fa-eye"></i> View Quiz
+                            </a>
+                            <a href="/start_quiz/{{ quiz.id }}" class="btn btn-success btn-lg w-100 mt-2">
+                                <i class="fas fa-play"></i> Start Quiz
+                            </a>
+                        </div>
+                        
+                        
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p>No upcoming quizzes available.</p>
+        {% endif %}
     </div>
 {% endblock content %}

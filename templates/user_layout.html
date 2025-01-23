@@ -11,31 +11,16 @@
       integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
       crossorigin="anonymous"
     />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+
     <link rel="stylesheet" href="main.css">
-    <style>
-      body {
-        background-color: #f9f9f9;
-      }
-      .navbar-brand {
-        font-weight: bold;
-      }
-      .card {
-        margin: 20px 0;
-      }
-      .center {
-        text-align: center;
-        margin: 20px 0;
-      }
-      .btn-spacing button {
-        margin-right: 10px;
-      }
-    </style>
   </head>
   <body>
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-sm navbar-light bg-primary text-white">
       <div class="container">
-        <span class="navbar-brand text-white">Welcome {{ name[:-10] | title}}</span>
+        <!-- Added style="font-weight: bold;" to make the welcome message bold -->
+        <span class="navbar-brand text-white" style="font-weight: bold;">Welcome {{ name[:-10] | title}}</span>
         <div class="collapse navbar-collapse" id="collapsibleNavId">
           <ul class="navbar-nav me-auto mt-2 mt-lg-0">
             <li class="nav-item"><a class="nav-link text-white" href="user_dashboard.html">Home</a></li>
@@ -43,19 +28,15 @@
             <li class="nav-item"><a class="nav-link text-white" href="#">Scores</a></li>
             <li class="nav-item"><a class="nav-link text-white" href="/login">Logout</a></li>
           </ul>
-          <form class="d-flex my-2 my-lg-0">
-            <input
-              class="form-control me-sm-2"
-              type="text"
-              placeholder="Search"
-            />
+          <form class="d-flex my-2 my-lg-0" method="POST" action="/search/{{name}}">
+            <input class="form-control me-sm-2" type="text" placeholder="Search" name="search_txt" id="search_txt">
             <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Search</button>
           </form>
         </div>
       </div>
     </nav>
     {% block content %}
-    <!--this is the content block we are getting from child html-->
+    <!-- Content block to be filled dynamically from child templates -->
     {% endblock %}
   </body>
 </html>

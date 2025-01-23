@@ -54,7 +54,8 @@ def admin_dashboard(name):
 #common routes for user dashboard
 @app.route('/user_dashboard/<name>',methods=['GET','POST'])
 def user_dashboard(name):
-    return render_template('user_dashboard.html',name=name)
+    quizzes=Quiz.query.all()
+    return render_template('user_dashboard.html',name=name,quizzes=quizzes)
 
 #add_subject routes
 @app.route('/add_subjects/<name>',methods=['GET','POST'])
@@ -81,8 +82,6 @@ def add_chapters(name,chapter_id):
         return redirect(url_for('admin_dashboard',name=name))
     
     return render_template('add_chapters.html',name=name,chapter_id=chapter_id)
-
-
 
 #edit_subject routes
 @app.route('/edit_subject/<id>/<name>', methods=['GET', 'POST'])
@@ -139,11 +138,7 @@ def add_quiz(name,chapter_id):
     
     return render_template('add_quiz.html',name=name,chapter_id=chapter_id)
 
-#quiz dashboard
-@app.route('/quiz/<name>',methods=['GET','POST'])
-def quiz(name):
-    quizzes=Quiz.query.all()
-    return render_template('quiz_dashboard.html',name=name,Quizzes=quizzes)
+
 
 #add question not running
 @app.route('/add_question/<quiz_id>/<name>',methods=['GET','POST'])
@@ -189,9 +184,15 @@ def delete_quiz(id, name):
     db.session.commit()
     return redirect(url_for('quiz', name=name))
 
+@app.route('/view_quiz/<id>/<name>', methods=['GET', 'POST'])
+def view_quiz(id, name):    
+    quiz = Quiz.query.get(id)
+    return render_template('view_quiz.html', name=name,quiz=quiz)
 
-
-
+@app.route('/start_quiz/<id>/<name>', methods=['GET', 'POST'])
+def start_quiz(id, name):    
+    quiz = Quiz.query.get(id)
+    return render_template('start_quiz.html', name=name,quiz=quiz)
 
 
 #searching routes incomplete
@@ -210,10 +211,25 @@ def search(name):
             return render_template('quiz_dashboard.html',name=name,subjects=by_quiz)
     return redirect(url_for('admin_dashboard',name=name))
 
+
+#quiz dashboard
+@app.route('/quiz/<name>',methods=['GET','POST'])
+def quiz(name):
+    quizzes=Quiz.query.all()
+    return render_template('quiz_dashboard.html',name=name,Quizzes=quizzes)
+
+
+
+
+#-------------------------------------------------------------------------------------------
 #other supported functions
 def get_subjects():
     subjects=Subject.query.all()
     return subjects 
+
+def get_quiz():
+    quizzes=Quiz.query.all()
+    return quizzes
 
 def search_by_subject(search_txt):
     subjects=Subject.query.filter(Subject.name.ilike(f"%{search_txt}%")).all()
