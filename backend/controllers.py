@@ -141,26 +141,47 @@ def add_quiz(name,chapter_id):
 
 
 #add question not running
-@app.route('/add_question/<quiz_id>/<name>',methods=['GET','POST'])
-def add_question(name,quiz_id):
+@app.route('/add_question/<quiz_id>/<name>', methods=['GET', 'POST'])
+def add_question(name, quiz_id):
     if request.method == 'POST':
-        question_statement=request.form.get('question_statement')
-        option1=request.form.get('option1')
-        option2=request.form.get('option2')
-        option3=request.form.get('option3')
-        option4=request.form.get('option4')
-        answer=request.form.get('correct_answer')
-        new_question=Question(quiz_id=quiz_id,question_statement=question_statement,option1=option1,option2=option2,option3=option3,option4=option4,correct_answer=answer)
+        question_statement = request.form.get('question_statement')
+        option1 = request.form.get('option1')
+        option2 = request.form.get('option2')
+        option3 = request.form.get('option3')
+        option4 = request.form.get('option4')
+        correct_answer = request.form.get('correct_answer') 
+
+        if correct_answer == '1':
+            correct_answer_value = option1
+        elif correct_answer == '2':
+            correct_answer_value = option2
+        elif correct_answer == '3':
+            correct_answer_value = option3
+        elif correct_answer == '4':
+            correct_answer_value = option4
+
+        new_question = Question(
+            quiz_id=quiz_id,
+            question_statement=question_statement,
+            option1=option1,
+            option2=option2,
+            option3=option3,
+            option4=option4,
+            correct_answer=correct_answer_value)
         db.session.add(new_question)
         db.session.commit()
-        
-        action=request.form.get('action')
-        if action=='save_next':
-            return redirect(url_for('add_question',name=name,quiz_id=quiz_id))
-        elif action=='submit':
-            return redirect(url_for('quiz',name=name))
-    
-    return render_template('add_question.html',name=name,quiz_id=quiz_id,quiz=Quiz.query.get(quiz_id))
+
+        action = request.form.get('action')
+        if action == 'save_next':
+            return redirect(url_for('add_question', name=name, quiz_id=quiz_id))
+        elif action == 'submit':
+            return redirect(url_for('quiz', name=name))
+
+    return render_template(
+        'add_question.html',
+        name=name,quiz_id=quiz_id,
+        quiz=Quiz.query.get(quiz_id),option1=request.form.get('option1', ''),option2=request.form.get('option2', ''),option3=request.form.get('option3', ''),option4=request.form.get('option4', '')
+    )
 
 #edit quiz
 @app.route('/edit_quiz/<id>/<name>', methods=['GET', 'POST'])
