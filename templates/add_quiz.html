@@ -10,7 +10,7 @@
           </div>
           <div class="card-body">
 
-            <!-- Flash -->
+            <!-- Flash code -->
             {% with messages = get_flashed_messages(with_categories=true) %}
               {% if messages %}
                 <div class="alert alert-success">
@@ -31,9 +31,9 @@
                 <input type="date" class="form-control" name="date_of_quiz" id="date_of_quiz" required>
               </div>
               <div class="mb-3">
-                <label for="time_duration" class="form-label">Time Duration (in minutes)</label>
-                <input type="number" class="form-control" name="time_duration" id="time_duration" placeholder="Time Duration" required>
-              </div>
+                <label for="time_duration" class="form-label">Time Duration (HH:MM)</label>
+                <input type="time" class="form-control" name="time_duration" id="time_duration" required>
+            </div>
               <div class="mb-3">
                 <label for="remarks" class="form-label">Remarks</label>
                 <textarea class="form-control" name="remarks" id="remarks" rows="3" placeholder="Additional Remarks" required></textarea>

@@ -128,11 +128,15 @@ def add_quiz(name,chapter_id):
         quiz_name=request.form.get('quiz_name')
         date=request.form.get('date_of_quiz')
         date_of_quiz=datetime.strptime(date, '%Y-%m-%d').date()
+
         time_duration=request.form.get('time_duration')
+        time_duration = datetime.strptime(time_duration, "%H:%M").time()
+
         remarks=request.form.get('remarks')
         new_quiz=Quiz(chapter_id=chapter_id,name=quiz_name,date_of_quiz=date_of_quiz,time_duration=time_duration,remarks=remarks)
         db.session.add(new_quiz)
         db.session.commit()
+
         flash('Quiz added successfully!', 'success')
         return redirect(url_for('admin_dashboard',name=name))
     
@@ -235,7 +239,6 @@ def submit_quiz(id, name):
         return render_template('score.html', name=name,quiz=quiz,total_score=total_score)
 
     return redirect(url_for('quiz', name=name))
-
 
 
 

@@ -6,70 +6,78 @@
     <div class="col-md-10">
       <div class="card shadow-lg">
         <div class="card-header bg-primary text-white text-center">
-          <h4>{{ quiz.name }} - Start Quiz</h4>
+          <h4>{{ quiz.name }} - Quiz Started...</h4>
           <p>Time Duration: <strong>{{ quiz.time_duration }}</strong></p>
+          <!-- Timer Display -->
+          <div id="timer" class="h3"></div>
+          <!-- Warning Message -->
+          <div id="warning" class="alert alert-warning mt-3" style="display: none;">
+            <strong>Warning!</strong> Time is almost up! You have less than 1 minute remaining.
+          </div>
         </div>
         <div class="card-body">
           <form action="/submit_quiz/{{ quiz.id }}/{{ name }}" method="POST">
             {% for question in quiz.questions %}
             <div class="mb-4 p-3 rounded shadow-sm bg-light">
-              <label class="form-label">
-                <b>Q{{ loop.index }}. {{ question.question_statement }}</b>
-              </label>
-              <div class="mt-2">
-                <div class="form-check">
-                  <input 
-                    class="form-check-input" 
-                    type="radio" 
-                    name="question_{{ question.id }}" 
-                    id="option1_{{ question.id }}" 
-                    value="option1" 
-                    required>
-                  <label class="form-check-label" for="option1_{{ question.id }}">
-                    {{ question.option1 }}
-                  </label>
-                </div>
-                <div class="form-check">
-                  <input 
-                    class="form-check-input" 
-                    type="radio" 
-                    name="question_{{ question.id }}" 
-                    id="option2_{{ question.id }}" 
-                    value="option2" 
-                    required>
-                  <label class="form-check-label" for="option2_{{ question.id }}">
-                    {{ question.option2 }}
-                  </label>
-                </div>
-                <div class="form-check">
-                  <input 
-                    class="form-check-input" 
-                    type="radio" 
-                    name="question_{{ question.id }}" 
-                    id="option3_{{ question.id }}" 
-                    value="option3" 
-                    required>
-                  <label class="form-check-label" for="option3_{{ question.id }}">
-                    {{ question.option3 }}
-                  </label>
-                </div>
-                <div class="form-check">
-                  <input 
-                    class="form-check-input" 
-                    type="radio" 
-                    name="question_{{ question.id }}" 
-                    id="option4_{{ question.id }}" 
-                    value="option4" 
-                    required>
-                  <label class="form-check-label" for="option4_{{ question.id }}">
-                    {{ question.option4 }}
-                  </label>
+              <div class="d-flex flex-column">
+                <label class="form-label text-dark h5">
+                  <b>Q{{ loop.index }}. {{ question.question_statement }}</b>
+                </label>
+                <div class="mt-2">
+                  <div class="form-check option-card">
+                    <input 
+                      class="form-check-input" 
+                      type="radio" 
+                      name="question_{{ question.id }}" 
+                      id="option1_{{ question.id }}" 
+                      value="option1" 
+                      required>
+                    <label class="form-check-label" for="option1_{{ question.id }}">
+                      <i class="bi bi-check-circle"></i> {{ question.option1 }}
+                    </label>
+                  </div>
+                  <div class="form-check option-card">
+                    <input 
+                      class="form-check-input" 
+                      type="radio" 
+                      name="question_{{ question.id }}" 
+                      id="option2_{{ question.id }}" 
+                      value="option2" 
+                      required>
+                    <label class="form-check-label" for="option2_{{ question.id }}">
+                      <i class="bi bi-check-circle"></i> {{ question.option2 }}
+                    </label>
+                  </div>
+                  <div class="form-check option-card">
+                    <input 
+                      class="form-check-input" 
+                      type="radio" 
+                      name="question_{{ question.id }}" 
+                      id="option3_{{ question.id }}" 
+                      value="option3" 
+                      required>
+                    <label class="form-check-label" for="option3_{{ question.id }}">
+                      <i class="bi bi-check-circle"></i> {{ question.option3 }}
+                    </label>
+                  </div>
+                  <div class="form-check option-card">
+                    <input 
+                      class="form-check-input" 
+                      type="radio" 
+                      name="question_{{ question.id }}" 
+                      id="option4_{{ question.id }}" 
+                      value="option4" 
+                      required>
+                    <label class="form-check-label" for="option4_{{ question.id }}">
+                      <i class="bi bi-check-circle"></i> {{ question.option4 }}
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
             {% endfor %}
             <div class="text-center mt-5">
-              <button type="submit" class="btn btn-success btn-lg px-5">Submit Quiz</button>
+              <button type="submit" class="btn btn-success btn-lg px-5" id="submitBtn">Submit Quiz</button>
               <a href="/user_dashboard/{{ name }}" class="btn btn-danger btn-lg px-5">Cancel</a>
             </div>
           </form>
@@ -78,4 +86,81 @@
     </div>
   </div>
 </div>
+
+<!-- Timer Script -->
+<script>
+  let timeDuration = "{{ quiz.time_duration }}";  
+  let [hours, minutes] = timeDuration.split(":").map(Number);
+  let totalTimeInSeconds = (hours * 3600) + (minutes * 60);
+
+  let timerDisplay = document.getElementById("timer");
+  let warningMessage = document.getElementById("warning");
+  let submitBtn = document.getElementById("submitBtn");
+
+  let countdown = setInterval(function() {
+    let hoursLeft = Math.floor(totalTimeInSeconds / 3600);
+    let minutesLeft = Math.floor((totalTimeInSeconds % 3600) / 60);
+    let secondsLeft = totalTimeInSeconds % 60;
+
+    timerDisplay.innerHTML = `${hoursLeft.toString().padStart(2, "0")}:${minutesLeft.toString().padStart(2, "0")}:${secondsLeft.toString().padStart(2, "0")}`;
+
+    if (totalTimeInSeconds <= 60 && totalTimeInSeconds > 0) {
+      warningMessage.style.display = 'block';
+    }
+
+    totalTimeInSeconds--;
+
+    if (totalTimeInSeconds < 0) {
+      clearInterval(countdown);
+      submitBtn.disabled = true;
+      alert("Time's up! The quiz has been submitted automatically.");
+      document.querySelector("form").submit();
+    }
+  }, 1000);
+</script>
+
+
+<style>
+  #timer {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #ff3333; 
+  }
+
+  #warning {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #ff9800; 
+  }
+
+  .option-card {
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 5px 0;
+    transition: background-color 0.3s, transform 0.2s;
+  }
+
+  .option-card:hover {
+    background-color: #d1ecf1;
+    transform: scale(1.02);
+    cursor: pointer;
+  }
+
+  .form-check-input {
+    margin-right: 15px;
+  }
+
+  .form-check-label {
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+  }
+
+  .form-check-label i {
+    margin-right: 8px;
+    font-size: 1.5rem;
+  }
+</style>
+
 {% endblock %}

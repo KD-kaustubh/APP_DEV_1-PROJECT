@@ -17,7 +17,7 @@
                         <p class="card-text">
                             <i class="far fa-question-circle"></i> Number of Questions: {{ quiz.questions | length }}<br>
                             <i class="far fa-calendar-alt"></i> Scheduled Date: {{ quiz.date_of_quiz.strftime('%d/%m/%Y') }}<br>
-                            <i class="far fa-clock"></i> Duration: {{ quiz.time_duration }} minutes
+                            <i class="far fa-clock"></i> Duration: {{ quiz.time_duration }}<br>
                         </p>
                         <div class="btn-spacing">
                             <a href="/view_quiz/{{ quiz.id }}/{{ name }}" class="btn btn-info btn-lg w-100">
@@ -35,7 +35,7 @@
             {% endfor %}
         </div>
         {% else %}
-        <p>No upcoming quizzes available.</p>
+        <p>No upcoming quizzes found</p>
         {% endif %}
     </div>
 {% endblock content %}

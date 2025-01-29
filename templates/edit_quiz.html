@@ -20,9 +20,9 @@
                   <input type="date" class="form-control" name="date_of_quiz" id="date_of_quiz" value="{{ quiz.date_of_quiz }}" required>
                 </div>
                 <div class="mb-3">
-                  <label for="time_duration" class="form-label">Duration (minutes)</label>
-                  <input type="number" class="form-control" name="time_duration" id="time_duration" value="{{ quiz.time_duration }}" required>
-                </div>
+                  <label for="time_duration" class="form-label">Time Duration (HH:MM)</label>
+                  <input type="time" class="form-control" name="time_duration" id="time_duration" required>
+              </div>
                 <div class="mb-3">
                   <label for="remarks" class="form-label">Remarks</label>
                   <textarea class="form-control" name="remarks" id="remarks" rows="3" required>{{ quiz.remarks }}</textarea>

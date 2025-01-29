@@ -1,6 +1,7 @@
 #DATA modelS
 
 from flask_sqlalchemy import SQLAlchemy
+from datetime import time
 
 db = SQLAlchemy()
 
@@ -53,7 +54,7 @@ class Quiz(db.Model):
     chapter_id = db.Column(db.Integer, db.ForeignKey("chapter.id"), nullable=False)
     name=db.Column(db.String(80), nullable=False)
     date_of_quiz = db.Column(db.Date, nullable=False)
-    time_duration = db.Column(db.String(80), nullable=False)  #time in hh:mm
+    time_duration = db.Column(db.Time, nullable=False)  #time in hh:mm
     remarks = db.Column(db.String(200),nullable=False)
     
     # relations define here
