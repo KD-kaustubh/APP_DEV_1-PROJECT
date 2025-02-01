@@ -1,39 +1,39 @@
 {% extends "user_layout.html" %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-4">
   <div class="row justify-content-center">
-    <div class="col-md-10">
-      <div class="card">
-        <div class="card-header text-center">
-          <h4>Scores for Quiz: {{ quiz.name }}</h4>
+    <div class="col-md-8">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white text-center">
+          <h4 class="mb-0">User Quiz Scores</h4>
         </div>
         <div class="card-body">
-          {% if scores|length > 0 %}
-          <table class="table table-bordered table-striped text-center">
-            <thead>
+          {% if user_scores %}
+          <table class="table table-hover text-center">
+            <thead class="table-light">
               <tr>
-                <th>User</th>
+                <th>Quiz Name</th>
                 <th>Date & Time</th>
-                <th>Total Score</th>
+                <th>Score</th>
               </tr>
             </thead>
             <tbody>
-              {% for score in scores %}
+              {% for score, quiz_name in user_scores %}
               <tr>
-                <td>{{ score.user }}</td>
-                <td>{{ score.timestamp }}</td>
-                <td>{{ score.total_score }}</td>
+                <td>{{ quiz_name }}</td>
+                <td>{{ score.time_stamp_of_attempt.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td><strong>{{ score.total_score }}</strong></td>
               </tr>
               {% endfor %}
             </tbody>
           </table>
           {% else %}
-          <p class="text-center text-muted">No scores available for this quiz.</p>
+          <p class="text-muted text-center">No quiz scores available.</p>
           {% endif %}
-          <div class="mt-4 d-flex justify-content-center">
-            <a href="/quizzes" class="btn btn-primary">Back to Quizzes</a>
-          </div>
+        </div>
+        <div class="card-footer text-center">
+          <a href="/user_dashboard/{{ name }}" class="btn btn-secondary">Back to Quizzes</a>
         </div>
       </div>
     </div>

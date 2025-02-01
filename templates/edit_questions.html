@@ -1,0 +1,24 @@
+{% extends 'admin_layout.html' %}
+
+{% block content %}
+  <div class="container">
+    <h4>Questions for Quiz: {{ quiz.name }}</h4>
+    <br>
+    
+    {% if questions %}
+      <ul class="list-group">
+        {% for question in questions %}
+          <li class="list-group-item">
+            <strong>{{ question.question_statement }}</strong>
+            <div class="d-flex justify-content-between">
+              <!-- Button to edit each question -->
+              <a href="/edit_question/{{ question.id }}/{{ name }}" class="btn btn-warning btn-sm">Edit</a>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No questions available for this quiz yet.</p>
+    {% endif %}
+  </div>
+{% endblock %}

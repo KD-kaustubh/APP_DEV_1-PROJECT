@@ -25,51 +25,27 @@
                 </label>
                 <div class="mt-2">
                   <div class="form-check option-card">
-                    <input 
-                      class="form-check-input" 
-                      type="radio" 
-                      name="question_{{ question.id }}" 
-                      id="option1_{{ question.id }}" 
-                      value="option1" 
-                      required>
+                    <input class="form-check-input" type="radio" name="question_{{ question.id }}" id="option1_{{ question.id }}" value="option1" required>
                     <label class="form-check-label" for="option1_{{ question.id }}">
-                      <i class="bi bi-check-circle"></i> {{ question.option1 }}
+                      {{ question.option1 }}
                     </label>
                   </div>
                   <div class="form-check option-card">
-                    <input 
-                      class="form-check-input" 
-                      type="radio" 
-                      name="question_{{ question.id }}" 
-                      id="option2_{{ question.id }}" 
-                      value="option2" 
-                      required>
+                    <input class="form-check-input" type="radio" name="question_{{ question.id }}" id="option2_{{ question.id }}" value="option2" required>
                     <label class="form-check-label" for="option2_{{ question.id }}">
-                      <i class="bi bi-check-circle"></i> {{ question.option2 }}
+                      {{ question.option2 }}
                     </label>
                   </div>
                   <div class="form-check option-card">
-                    <input 
-                      class="form-check-input" 
-                      type="radio" 
-                      name="question_{{ question.id }}" 
-                      id="option3_{{ question.id }}" 
-                      value="option3" 
-                      required>
+                    <input class="form-check-input" type="radio" name="question_{{ question.id }}" id="option3_{{ question.id }}" value="option3" required>
                     <label class="form-check-label" for="option3_{{ question.id }}">
-                      <i class="bi bi-check-circle"></i> {{ question.option3 }}
+                      {{ question.option3 }}
                     </label>
                   </div>
                   <div class="form-check option-card">
-                    <input 
-                      class="form-check-input" 
-                      type="radio" 
-                      name="question_{{ question.id }}" 
-                      id="option4_{{ question.id }}" 
-                      value="option4" 
-                      required>
+                    <input class="form-check-input" type="radio" name="question_{{ question.id }}" id="option4_{{ question.id }}" value="option4" required>
                     <label class="form-check-label" for="option4_{{ question.id }}">
-                      <i class="bi bi-check-circle"></i> {{ question.option4 }}
+                      {{ question.option4 }}
                     </label>
                   </div>
                 </div>
@@ -119,18 +95,17 @@
   }, 1000);
 </script>
 
-
 <style>
   #timer {
     font-size: 2rem;
     font-weight: bold;
-    color: #ff3333; 
+    color: #ff3333;
   }
 
   #warning {
     font-size: 1.25rem;
     font-weight: bold;
-    color: #ff9800; 
+    color: #ff9800;
   }
 
   .option-card {
@@ -138,13 +113,6 @@
     border-radius: 10px;
     padding: 10px;
     margin: 5px 0;
-    transition: background-color 0.3s, transform 0.2s;
-  }
-
-  .option-card:hover {
-    background-color: #d1ecf1;
-    transform: scale(1.02);
-    cursor: pointer;
   }
 
   .form-check-input {

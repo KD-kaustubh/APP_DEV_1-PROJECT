@@ -144,7 +144,7 @@ def add_quiz(name,chapter_id):
 
 
 
-#add question not running
+#add question 
 @app.route('/add_question/<quiz_id>/<name>', methods=['GET', 'POST'])
 def add_question(name, quiz_id):
     if request.method == 'POST':
@@ -187,6 +187,52 @@ def add_question(name, quiz_id):
         quiz=Quiz.query.get(quiz_id),option1=request.form.get('option1', ''),option2=request.form.get('option2', ''),option3=request.form.get('option3', ''),option4=request.form.get('option4', '')
     )
 
+# Route to edit a specific question
+@app.route('/edit_question/<question_id>/<name>', methods=['GET', 'POST'])
+def edit_question(question_id, name):
+    question = Question.query.get(question_id)  # Fetch the question by its ID
+    if not question:  # If no question is found, handle gracefully
+        return redirect(url_for('edit_questions', quiz_id=question.quiz_id, name=name))
+
+    quiz = Quiz.query.get(question.quiz_id)  # Fetch the quiz related to the question
+    
+    if request.method == 'POST':
+        # Update the question fields
+        question.question_statement = request.form.get('question_statement')
+        question.option1 = request.form.get('option1')
+        question.option2 = request.form.get('option2')
+        question.option3 = request.form.get('option3')
+        question.option4 = request.form.get('option4')
+        
+        # Set the correct answer based on the selected option
+        correct_answer = request.form.get('correct_answer')
+        if correct_answer == '1':
+            question.correct_answer = question.option1
+        elif correct_answer == '2':
+            question.correct_answer = question.option2
+        elif correct_answer == '3':
+            question.correct_answer = question.option3
+        elif correct_answer == '4':
+            question.correct_answer = question.option4
+        
+        db.session.commit()  # Save the changes
+        
+        # After saving, redirect to the page showing all questions for this quiz
+        return redirect(url_for('edit_questions', quiz_id=question.quiz_id, name=name))  
+
+    # For GET requests, render the template with the question and quiz
+    return render_template('edit_question.html', name=name, question=question, quiz=quiz)
+
+# Route to edit all questions for a specific quiz
+@app.route('/edit_questions/<quiz_id>/<name>', methods=['GET'])
+def edit_questions(quiz_id, name):
+    quiz = Quiz.query.get(quiz_id)  # Fetch the quiz
+    questions = Question.query.filter_by(quiz_id=quiz_id).all()  # Fetch all questions for this quiz
+
+    return render_template('edit_questions.html', quiz=quiz, questions=questions, name=name)
+
+
+
 #edit quiz
 @app.route('/edit_quiz/<id>/<name>', methods=['GET', 'POST'])
 def edit_quiz(id, name):
@@ -222,7 +268,7 @@ def start_quiz(id, name):
     return render_template('start_quiz.html', name=name,quiz=quiz)
 
 #submit quiz incommplete
-@app.route('/submit_quiz/<id>/<name>', methods=['GET', 'POST'])
+@app.route('/submit_quiz/<id>/<name>', methods=['POST'])
 def submit_quiz(id, name):    
     quiz = Quiz.query.get(id)
     user=User.query.filter_by(username=name).first()
@@ -230,13 +276,14 @@ def submit_quiz(id, name):
     if quiz and user:
         total_score=0
         for question in quiz.questions:
-            user_answer=request.form.get(str(question.id))
+            user_answer = request.form.get(f'question_{question.id}')
             if user_answer==question.correct_answer:
                 total_score+=1
         new_score=Score(quiz_id=id,user_id=user.id,time_stamp_of_attempt=datetime.now(),total_score=total_score)
         db.session.add(new_score)
         db.session.commit()
-        return render_template('score.html', name=name,quiz=quiz,total_score=total_score)
+
+        return redirect(url_for('scores', name=name))
 
     return redirect(url_for('quiz', name=name))
 
@@ -246,8 +293,19 @@ def submit_quiz(id, name):
 #SCORES
 @app.route('/scores/<name>',methods=['GET','POST'])
 def scores(name):
-    scores=Score.query.all()
-    return render_template('scores.html',name=name,scores=scores)
+    user=User.query.filter_by(username=name).first()
+    if not user:
+        return redirect(url_for('home'))
+    
+    user_scores = (
+    db.session.query(Score, Quiz.name)  # Select Score and Quiz name
+    .join(Quiz, Score.quiz_id == Quiz.id)  # Join Score with Quiz
+    .filter(Score.user_id == user.id)  # Filter only the current user's scores
+    .order_by(Score.time_stamp_of_attempt.desc())  # Order by latest attempt
+    .all()
+)
+
+    return render_template('scores.html',name=name,user_scores=user_scores)
 
 
 
