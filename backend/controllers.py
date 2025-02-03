@@ -18,11 +18,11 @@ def signin():
         pwd=request.form.get('password')
         usr= User.query.filter_by(username=uname,password=pwd).first()
         if usr and usr.role==0: #existed and admin
-            return redirect(url_for('admin_dashboard',name=uname)) #render_template('admin_dashboard.html',name=uname)
+            return redirect(url_for('admin_dashboard',name=uname)) 
         elif usr and usr.role==1: #existed and user
-            return redirect(url_for('user_dashboard',name=uname)) #render_template('user_dashboard.html',name=uname)
+            return redirect(url_for('user_dashboard',name=uname)) 
         else:
-            return render_template('login.html',err_msg="Invalid User Credentials")#invalid user it will return login page with error message
+            return render_template('login.html',err_msg="Invalid User Credentials")
 
     return render_template('login.html',err_msg="")
 
@@ -164,14 +164,7 @@ def add_question(name, quiz_id):
         elif correct_answer == '4':
             correct_answer_value = option4
 
-        new_question = Question(
-            quiz_id=quiz_id,
-            question_statement=question_statement,
-            option1=option1,
-            option2=option2,
-            option3=option3,
-            option4=option4,
-            correct_answer=correct_answer_value)
+        new_question = Question(quiz_id=quiz_id,question_statement=question_statement,option1=option1,option2=option2,option3=option3,option4=option4,correct_answer=correct_answer_value)
         db.session.add(new_question)
         db.session.commit()
 
@@ -184,27 +177,24 @@ def add_question(name, quiz_id):
     return render_template(
         'add_question.html',
         name=name,quiz_id=quiz_id,
-        quiz=Quiz.query.get(quiz_id),option1=request.form.get('option1', ''),option2=request.form.get('option2', ''),option3=request.form.get('option3', ''),option4=request.form.get('option4', '')
-    )
+        quiz=Quiz.query.get(quiz_id),option1=request.form.get('option1', ''),option2=request.form.get('option2', ''),option3=request.form.get('option3', ''),option4=request.form.get('option4', ''))
 
 # Route to edit a specific question
 @app.route('/edit_question/<question_id>/<name>', methods=['GET', 'POST'])
 def edit_question(question_id, name):
-    question = Question.query.get(question_id)  # Fetch the question by its ID
-    if not question:  # If no question is found, handle gracefully
+    question = Question.query.get(question_id)
+    if not question: 
         return redirect(url_for('edit_questions', quiz_id=question.quiz_id, name=name))
 
-    quiz = Quiz.query.get(question.quiz_id)  # Fetch the quiz related to the question
+    quiz = Quiz.query.get(question.quiz_id)  
     
     if request.method == 'POST':
-        # Update the question fields
         question.question_statement = request.form.get('question_statement')
         question.option1 = request.form.get('option1')
         question.option2 = request.form.get('option2')
         question.option3 = request.form.get('option3')
         question.option4 = request.form.get('option4')
         
-        # Set the correct answer based on the selected option
         correct_answer = request.form.get('correct_answer')
         if correct_answer == '1':
             question.correct_answer = question.option1
@@ -215,22 +205,28 @@ def edit_question(question_id, name):
         elif correct_answer == '4':
             question.correct_answer = question.option4
         
-        db.session.commit()  # Save the changes
-        
-        # After saving, redirect to the page showing all questions for this quiz
+        db.session.commit()
         return redirect(url_for('edit_questions', quiz_id=question.quiz_id, name=name))  
 
-    # For GET requests, render the template with the question and quiz
     return render_template('edit_question.html', name=name, question=question, quiz=quiz)
 
-# Route to edit all questions for a specific quiz
+# edit all questions specific quiz
 @app.route('/edit_questions/<quiz_id>/<name>', methods=['GET'])
 def edit_questions(quiz_id, name):
-    quiz = Quiz.query.get(quiz_id)  # Fetch the quiz
-    questions = Question.query.filter_by(quiz_id=quiz_id).all()  # Fetch all questions for this quiz
+    quiz = Quiz.query.get(quiz_id)  
+    questions = Question.query.filter_by(quiz_id=quiz_id).all()  
 
     return render_template('edit_questions.html', quiz=quiz, questions=questions, name=name)
 
+#delete specific question
+@app.route('/delete_question/<question_id>/<name>', methods=['GET', 'POST'])
+def delete_question(question_id, name):
+    question = Question.query.get(question_id)
+    if question:
+        quiz_id = question.quiz_id
+        db.session.delete(question)
+        db.session.commit()
+    return redirect(url_for('edit_questions', quiz_id=quiz_id, name=name))
 
 
 #edit quiz
@@ -241,7 +237,9 @@ def edit_quiz(id, name):
         quiz.name = request.form.get('quiz_name')
         quiz.date_of_quiz = request.form.get('date_of_quiz')
         quiz.date_of_quiz = datetime.strptime(quiz.date_of_quiz, '%Y-%m-%d').date()
-        quiz.time_duration = request.form.get('time_duration')
+        time_str=request.form.get('time_duration')
+        time_obj = datetime.strptime(time_str, "%H:%M").time()
+        quiz.time_duration = time_obj
         quiz.remarks = request.form.get('remarks')
         db.session.commit()
         return redirect(url_for('quiz', name=name))
@@ -267,7 +265,7 @@ def start_quiz(id, name):
     quiz = Quiz.query.get(id)
     return render_template('start_quiz.html', name=name,quiz=quiz)
 
-#submit quiz commplete
+#submit quiz complete
 @app.route('/submit_quiz/<id>/<name>', methods=['POST'])
 def submit_quiz(id, name):    
     quiz = Question.query.filter_by(quiz_id=id).all()
@@ -288,8 +286,6 @@ def submit_quiz(id, name):
     return redirect(url_for('quiz', name=name))
 
 
-
-
 #SCORES
 @app.route('/scores/<name>',methods=['GET','POST'])
 def scores(name):
@@ -306,6 +302,78 @@ def scores(name):
 )
 
     return render_template('scores.html',name=name,user_scores=user_scores)
+
+
+import matplotlib.pyplot as plt
+import io
+import base64
+from flask import Response
+from io import BytesIO
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+@app.route('/summary/<name>', methods=['GET'])
+def summary(name):
+    user = User.query.filter_by(username=name).first()
+    if not user:
+        return redirect(url_for('home'))
+    
+    # Fetch all quizzes attempted by the user, along with the subject from the related Chapter
+    user_scores = (
+        db.session.query(Score, Quiz.name, Subject.name.label('subject'), Score.time_stamp_of_attempt)
+        .join(Quiz, Score.quiz_id == Quiz.id)
+        .join(Chapter, Quiz.chapter_id == Chapter.id)  # Join with Chapter to get the subject
+        .join(Subject, Chapter.subject_id == Subject.id)  # Join with Subject to get the subject name
+        .filter(Score.user_id == user.id)
+        .all()
+    )
+
+    # Group data for subject-wise and month-wise chart
+    subject_counts = {}
+    month_counts = {}
+
+    for score, quiz_name, subject, time_stamp in user_scores:
+        month = time_stamp.strftime('%m')  # Extract month
+
+        # Count subject-wise quizzes
+        subject_counts[subject] = subject_counts.get(subject, 0) + 1
+
+        # Count month-wise quizzes
+        month_counts[month] = month_counts.get(month, 0) + 1
+
+    # Generate subject-wise chart
+    fig_subject = plt.figure(figsize=(6, 4))
+    plt.bar(subject_counts.keys(), subject_counts.values())
+    plt.xlabel('Subjects')
+    plt.ylabel('Attempt Count')
+    plt.title('Subject-wise Quiz Attempts')
+
+    # Save the figure to a PNG image
+    img_subject = io.BytesIO()
+    FigureCanvas(fig_subject).print_png(img_subject)
+    img_subject.seek(0)
+    subject_chart_url = base64.b64encode(img_subject.getvalue()).decode('utf8')
+
+    # Generate month-wise chart
+    fig_month = plt.figure(figsize=(6, 4))
+    plt.bar(month_counts.keys(), month_counts.values())
+    plt.xlabel('Month')
+    plt.ylabel('Attempt Count')
+    plt.title('Month-wise Quiz Attempts')
+
+    # Save the figure to a PNG image
+    img_month = io.BytesIO()
+    FigureCanvas(fig_month).print_png(img_month)
+    img_month.seek(0)
+    month_chart_url = base64.b64encode(img_month.getvalue()).decode('utf8')
+
+    return render_template(
+        'user_summary.html',
+        name=name,
+        subject_counts=subject_counts,
+        month_counts=month_counts,
+        subject_chart_url=subject_chart_url,
+        month_chart_url=month_chart_url
+    )
+
 
 
 
@@ -334,7 +402,11 @@ def quiz(name):
     quizzes=Quiz.query.all()
     return render_template('quiz_dashboard.html',name=name,Quizzes=quizzes)
 
-
+#score dashboard
+@app.route('/score_dashboard/<name>',methods=['GET','POST'])
+def score_dashboard(name):
+    scores=Score.query.all()
+    return render_template('scores.html',name=name,scores=scores)
 
 
 #-------------------------------------------------------------------------------------------
