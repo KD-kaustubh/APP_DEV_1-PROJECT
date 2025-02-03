@@ -267,15 +267,15 @@ def start_quiz(id, name):
     quiz = Quiz.query.get(id)
     return render_template('start_quiz.html', name=name,quiz=quiz)
 
-#submit quiz incommplete
+#submit quiz commplete
 @app.route('/submit_quiz/<id>/<name>', methods=['POST'])
 def submit_quiz(id, name):    
-    quiz = Quiz.query.get(id)
+    quiz = Question.query.filter_by(quiz_id=id).all()
     user=User.query.filter_by(username=name).first()
 
     if quiz and user:
         total_score=0
-        for question in quiz.questions:
+        for question in quiz:
             user_answer = request.form.get(f'question_{question.id}')
             if user_answer==question.correct_answer:
                 total_score+=1
