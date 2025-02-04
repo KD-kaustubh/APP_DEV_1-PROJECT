@@ -12,7 +12,7 @@
           <div id="timer" class="h3"></div>
           <!-- Warning Message -->
           <div id="warning" class="alert alert-warning mt-3" style="display: none;">
-            <strong>Warning!</strong> Time is almost up! You have less than 1 minute remaining.
+            <strong>Warning!</strong> You have less than 1 minute remaining
           </div>
         </div>
         <div class="card-body">
@@ -63,7 +63,7 @@
   </div>
 </div>
 
-<!-- Timer Script -->
+<!-- timer ka script -->
 <script>
   let timeDuration = "{{ quiz.time_duration }}";  
   let [hours, minutes] = timeDuration.split(":").map(Number);
@@ -97,16 +97,25 @@
 
 <style>
   #timer {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #ff3333;
-  }
+  font-size: 2rem;
+  font-weight: bold;
+  color: #ff3333;
+  position: fixed;
+  top: 60px; 
+  right: 20px; 
+  z-index: 1000; 
+}
 
-  #warning {
-    font-size: 1.25rem;
-    font-weight: bold;
-    color: #ff9800;
-  }
+#warning {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #ff9800;
+  position: fixed;
+  top: 80px; 
+  right: 20px;
+  z-index: 1000;
+}
+
 
   .option-card {
     background-color: #f9f9f9;

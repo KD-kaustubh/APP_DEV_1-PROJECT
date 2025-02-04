@@ -2,42 +2,36 @@
 
 {% block content %}
 <div class="container mt-4">
-  <!-- Page Title -->
   <div class="row justify-content-center mb-5">
     <div class="col-md-8 text-center">
-      <h2 class="display-4 text-primary">User Summary for {{ name[:-10]}}</h2>
-      <p class="lead text-muted">A detailed overview of your quiz attempts.</p>
+      <h2 class="display-6 text-primary">Summary for {{ name[:-10] | title}}</h2>
+      <p class="text-muted">A detailed overview of your quiz attempts</p>
     </div>
   </div>
-
-  <!-- Row for Charts -->
   <div class="row justify-content-center">
-    <!-- Left Column: Subject-wise Chart -->
     <div class="col-lg-5 col-md-6 mb-4">
       <div class="card shadow-sm">
         <div class="card-header bg-light text-center">
           <h5 class="mb-0">Subject-wise Quiz Attempts</h5>
         </div>
         <div class="card-body text-center">
-          <img src="data:image/png;base64,{{ subject_chart_url }}" alt="Subject-wise Chart" class="img-fluid rounded">
+          <img src="data:image/png;base64,{{ subject_pie_chart_url }}" alt="Subject-wise Pie Chart" class="img-fluid rounded">
         </div>
       </div>
     </div>
 
-    <!-- Right Column: Month-wise Chart -->
     <div class="col-lg-5 col-md-6 mb-4">
       <div class="card shadow-sm">
         <div class="card-header bg-light text-center">
           <h5 class="mb-0">Month-wise Quiz Attempts</h5>
         </div>
         <div class="card-body text-center">
-          <img src="data:image/png;base64,{{ month_chart_url }}" alt="Month-wise Chart" class="img-fluid rounded">
+          <img src="data:image/png;base64,{{ month_bar_chart_url }}" alt="Month-wise Bar Chart" class="img-fluid rounded">
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Row for Data Lists -->
   <div class="row justify-content-center">
     <div class="col-lg-5 col-md-6">
       <div class="card shadow-sm">
@@ -50,7 +44,7 @@
             {% for subject, count in subject_counts.items() %}
               <li class="list-group-item d-flex justify-content-between">
                 <span class="font-weight-semibold">{{ subject }}</span>
-                <span class="badge badge-pill badge-primary">{{ count }} Attempts</span>
+                <span class="badge badge-pill badge-dark text-black">{{ count }} Attempts</span>
               </li>
             {% endfor %}
           </ul>
@@ -71,8 +65,8 @@
           <ul class="list-group">
             {% for month, count in month_counts.items() %}
               <li class="list-group-item d-flex justify-content-between">
-                <span class="font-weight-semibold">Month {{ month }}</span>
-                <span class="badge badge-pill badge-success">{{ count }} Attempts</span>
+                <span class="font-weight-semibold">{{ month }}</span>
+                <span class="badge badge-pill badge-info text-black">{{ count }} Attempts</span>
               </li>
             {% endfor %}
           </ul>
@@ -84,7 +78,6 @@
     </div>
   </div>
 
-  <!-- Back Button -->
   <div class="text-center mt-4">
     <a href="/user_dashboard/{{ name }}" class="btn btn-primary btn-lg">Back to Dashboard</a>
   </div>

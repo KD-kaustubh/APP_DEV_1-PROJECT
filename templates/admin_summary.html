@@ -1,0 +1,88 @@
+{% extends "admin_layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="text-center text-primary">Admin Dashboard - Summary</h2>
+  <p class="text-center text-muted">Overview of quizzes, users, and performance</p>
+
+  <div class="row text-center mb-4">
+    <div class="col-md-3">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5>Total Users</h5>
+          <h3>{{ total_users }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5>Admins</h5>
+          <h3>{{ total_admins }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5>Students</h5>
+          <h3>{{ total_students }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5>Quizzes Conducted</h5>
+          <h3>{{ total_quizzes }}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-5">
+      <div class="card shadow-sm">
+        <div class="card-header text-center bg-light">
+          <h5>Overall Quiz Attempts (Monthly)</h5>
+        </div>
+        <div class="card-body text-center">
+          <img src="data:image/png;base64,{{ month_bar_chart_url }}" class="img-fluid rounded">
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-5">
+      <div class="card shadow-sm">
+        <div class="card-header text-center bg-light">
+          <h5>Overall Quiz Attempts by Subject</h5>
+        </div>
+        <div class="card-body text-center">
+          <img src="data:image/png;base64,{{ subject_pie_chart_url }}" class="img-fluid rounded">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-light text-center">
+          <h5>Top 5 Users</h5>
+        </div>
+        <div class="card-body">
+          <ul class="list-group">
+            {% for user, score in top_users %}
+              <li class="list-group-item d-flex justify-content-between">
+                <span>{{ user }}</span>
+                <span class="badge badge-pill badge-dark text-black">{{ score | round(1) }} Points</span>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
