@@ -23,12 +23,25 @@
                             <a href="/view_quiz/{{ quiz.id }}/{{ name }}" class="btn btn-info btn-lg w-100">
                                 <i class="fas fa-eye"></i> View Quiz
                             </a>
-                            <a href="/start_quiz/{{ quiz.id }}/{{ name }}" class="btn btn-success btn-lg w-100 mt-2">
-                                <i class="fas fa-play"></i> Start Quiz
-                            </a>
+
+                            {% if quiz.date_of_quiz == today %}
+                                <!-- quiz live -->
+                                <a href="/start_quiz/{{ quiz.id }}/{{ name }}" class="btn btn-success btn-lg w-100 mt-2">
+                                    <i class="fas fa-play"></i> Start Quiz
+                                </a>
+                            {% elif quiz.date_of_quiz > today %}
+                                <!-- quiz abhi live nhi-->
+                                <button class="btn btn-warning btn-lg w-100 mt-2" onclick="alert('Quiz will be live on {{ quiz.date_of_quiz }}')">
+                                    <i class="fas fa-clock"></i> Not Live Yet
+                                </button>
+                            {% else %}
+                                <!-- quiz date passed -->
+                                <button class="btn btn-danger btn-lg w-100 mt-2" onclick="alert('Quiz date has passed!')">
+                                    <i class="fas fa-times-circle"></i> Expired
+                                </button>
+                            {% endif %}
                         </div>
-                        
-                        
+                    
                     </div>
                 </div>
             </div>
@@ -39,3 +52,4 @@
         {% endif %}
     </div>
 {% endblock content %}
+

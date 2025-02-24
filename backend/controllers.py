@@ -54,8 +54,15 @@ def admin_dashboard(name):
 #common routes for user dashboard
 @app.route('/user_dashboard/<name>',methods=['GET','POST'])
 def user_dashboard(name):
-    quizzes=Quiz.query.all()
-    return render_template('user_dashboard.html',name=name,quizzes=quizzes)
+    quizzes=Quiz.query.order_by(Quiz.date_of_quiz.desc()).all()
+
+    today=datetime.now().date()
+    
+    return render_template('user_dashboard.html',name=name,quizzes=quizzes,today=today)
+
+#---------------------------------------------------------------------------------------------
+
+
 
 #add_subject routes
 @app.route('/add_subjects/<name>',methods=['GET','POST'])
@@ -179,7 +186,8 @@ def add_question(name, quiz_id):
         name=name,quiz_id=quiz_id,
         quiz=Quiz.query.get(quiz_id),option1=request.form.get('option1', ''),option2=request.form.get('option2', ''),option3=request.form.get('option3', ''),option4=request.form.get('option4', ''))
 
-# Route to edit a specific question
+
+#edit question specific
 @app.route('/edit_question/<question_id>/<name>', methods=['GET', 'POST'])
 def edit_question(question_id, name):
     question = Question.query.get(question_id)
@@ -298,8 +306,7 @@ def scores(name):
     .join(Quiz, Score.quiz_id == Quiz.id)  
     .filter(Score.user_id == user.id) 
     .order_by(Score.time_stamp_of_attempt.desc())  
-    .all()
-)
+    .all())
 
     return render_template('scores.html',name=name,user_scores=user_scores)
 
@@ -328,8 +335,7 @@ def summary(name):
         .join(Chapter, Quiz.chapter_id == Chapter.id)  
         .join(Subject, Chapter.subject_id == Subject.id) 
         .filter(Score.user_id == user.id)
-        .all()
-    )
+        .all())
 
     subject_counts = {}
     month_counts = {}
@@ -371,15 +377,14 @@ def summary(name):
         subject_counts=subject_counts,
         month_counts=month_counts,
         subject_pie_chart_url=subject_pie_chart_url,
-        month_bar_chart_url=month_bar_chart_url
-    )
+        month_bar_chart_url=month_bar_chart_url)
 
 
 #admin summary charts
 @app.route('/admin/summary', methods=['GET'])
 def admin_summary():
     #permanent admin
-    name = session.get("username", "Admin")  # Default to "Admin" if not found
+    name = session.get("username", "Admin")  
     #total user
     total_users = User.query.count()
     total_admins = User.query.filter_by(role=0).count()
@@ -434,27 +439,34 @@ def admin_summary():
         subject_pie_chart_url=subject_pie_chart_url,top_users=top_users)
 
 
-#-------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
 
+@app.route('/admin/search', methods=['GET'])
+def admin_search():
+    query = request.args.get('query', '').strip()
+    if query:
+        subjects = Subject.query.filter(Subject.name.ilike(f"%{query}%")).all()
+    else:
+        subjects = Subject.query.all()
+    return render_template('admin_dashboard.html', subjects=subjects)
 
-#searching routes incomplete
-@app.route('/search/<name>',methods=['GET','POST'])
-def search(name):
-    if request.method == 'POST':
-        search_txt=request.form.get('search_txt')
-        by_subject=search_by_subject(search_txt)
-        by_chapter=search_by_chapter(search_txt)
-        by_quiz=search_by_quiz(search_txt)
-        if by_subject:
-            return render_template('admin_dashboard.html',name=name,subjects=by_subject)
-        elif by_chapter:
-            return render_template('admin_dashboard.html',name=name,subjects=by_chapter)
-        elif by_quiz:
-            return render_template('quiz_dashboard.html',name=name,subjects=by_quiz)
-    return redirect(url_for('admin_dashboard',name=name))
+@app.route('/user/search', methods=['GET'])
+def user_search():
+    query = request.args.get('query', '').strip()
+    if query:
+        quizzes = Quiz.query.join(Chapter).join(Subject).filter(
+            (Subject.name.ilike(f"%{query}%")) | (Chapter.name.ilike(f"%{query}%"))
+        ).all()
+    else:
+        quizzes = Quiz.query.all()
+    return render_template('user_dashboard.html', quizzes=quizzes)
+
+
+
 
 
 #quiz dashboard
