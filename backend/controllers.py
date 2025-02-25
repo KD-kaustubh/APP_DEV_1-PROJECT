@@ -445,25 +445,39 @@ def admin_summary():
 
 
 
-@app.route('/admin/search', methods=['GET'])
-def admin_search():
-    query = request.args.get('query', '').strip()
-    if query:
-        subjects = Subject.query.filter(Subject.name.ilike(f"%{query}%")).all()
-    else:
-        subjects = Subject.query.all()
-    return render_template('admin_dashboard.html', subjects=subjects)
+#searching routes
+#admin search
+@app.route('/adminsearch/<name>',methods=['GET','POST'])
+def search(name):
+    if request.method == 'POST':
+        search_txt=request.form.get('search_txt')
+        by_subject=search_by_subject(search_txt)
+        by_chapter=search_by_chapter(search_txt)
+        if by_subject:
+            return render_template('admin_dashboard.html',name=name,subjects=by_subject)
+        elif by_chapter:
+            return render_template('admin_dashboard.html',name=name,subjects=by_chapter)
+    return redirect(url_for('admin_dashboard',name=name))
 
-@app.route('/user/search', methods=['GET'])
-def user_search():
-    query = request.args.get('query', '').strip()
-    if query:
-        quizzes = Quiz.query.join(Chapter).join(Subject).filter(
-            (Subject.name.ilike(f"%{query}%")) | (Chapter.name.ilike(f"%{query}%"))
-        ).all()
-    else:
-        quizzes = Quiz.query.all()
-    return render_template('user_dashboard.html', quizzes=quizzes)
+#user search
+@app.route('/usersearch/<name>', methods=['GET', 'POST'])
+def user_search(name):
+    if request.method == 'POST':
+        search_txt = request.form.get('search_txt')
+        
+        if search_txt:
+            # Search in quizzes by subject or quiz name
+            quizzes = search_quiz_by_subject_or_quiz(search_txt)
+            # Search in quizzes by subject or chapter name
+            chapters = search_quiz_by_subject_or_chapter(search_txt)
+            
+            today = datetime.now().date()
+            return render_template('user_dashboard.html', name=name, quizzes=quizzes, chapters=chapters, today=today)
+    
+    return redirect(url_for('user_dashboard', name=name))
+
+
+        
 
 
 
@@ -501,7 +515,18 @@ def search_by_chapter(search_txt):
     subjects=[chapter.subject for chapter in chapters]
     return subjects
 
-def search_by_quiz(search_txt):
-    quizzes=Quiz.query.filter(Quiz.name.ilike(f"%{search_txt}%")).all()
-    subjects=[quiz.chapter.subject for quiz in quizzes]
-    return subjects
+#user search routes
+def search_quiz_by_subject_or_quiz(search_term):
+    if search_term:
+        # Search quizzes based on subject name or quiz name
+        return Quiz.query.join(Chapter).join(Subject).filter((Subject.name.ilike(f'%{search_term}%')) | (Quiz.name.ilike(f'%{search_term}%'))).all()
+    return []
+
+
+def search_quiz_by_subject_or_chapter(search_term):
+    if search_term:
+        # Search chapters based on the subject name or chapter name
+        return Chapter.query.join(Subject).filter((Subject.name.ilike(f'%{search_term}%')) | (Chapter.name.ilike(f'%{search_term}%'))).all()
+    return []
+
+
