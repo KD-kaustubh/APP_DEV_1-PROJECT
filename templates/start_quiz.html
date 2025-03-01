@@ -80,42 +80,45 @@
 
     timerDisplay.innerHTML = `${hoursLeft.toString().padStart(2, "0")}:${minutesLeft.toString().padStart(2, "0")}:${secondsLeft.toString().padStart(2, "0")}`;
 
+    // Show warning when less than 1 minute is left
     if (totalTimeInSeconds <= 60 && totalTimeInSeconds > 0) {
       warningMessage.style.display = 'block';
+      // Hide warning after 15 seconds
+      setTimeout(function() {
+        warningMessage.style.display = 'none';
+      }, 15000); // 15 seconds
     }
 
     totalTimeInSeconds--;
 
+    // Prevent form submission when time is up (no auto-submit)
     if (totalTimeInSeconds < 0) {
       clearInterval(countdown);
-      submitBtn.disabled = true;
-      alert("Time's up! The quiz has been submitted automatically.");
-      document.querySelector("form").submit();
+      submitBtn.disabled = true; 
     }
   }, 1000);
 </script>
 
 <style>
   #timer {
-  font-size: 2rem;
-  font-weight: bold;
-  color: #ff3333;
-  position: fixed;
-  top: 60px; 
-  right: 20px; 
-  z-index: 1000; 
-}
+    font-size: 2rem;
+    font-weight: bold;
+    color: #ff3333;
+    position: fixed;
+    top: 60px; 
+    right: 20px; 
+    z-index: 1000; 
+  }
 
-#warning {
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: #ff9800;
-  position: fixed;
-  top: 80px; 
-  right: 20px;
-  z-index: 1000;
-}
-
+  #warning {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #ff9800;
+    position: fixed;
+    top: 80px; 
+    right: 20px;
+    z-index: 1000;
+  }
 
   .option-card {
     background-color: #f9f9f9;

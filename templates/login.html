@@ -10,10 +10,10 @@
 <body>
     <div class="my_container">
         <div class="center">
-            <h1>Quiz Master</h1>
+            <h1><b>Quiz Master</b></h1>
         </div>
         <div class="my_panel">
-            <div class="center"><h3>Login</h3></div>
+            <div class="center"><h2>Login</h2></div>
             <!-- login form -->
             <form action="/login" method="POST">
             <div class="input_form">
@@ -26,7 +26,9 @@
                     <input type="password" class="form-control" name="password" id="password" placeholder="password">
                 </div>
                 <button type="submit" class="btn btn-primary">Login</button>
-                New User? <a href="/register">Sign Up</a>
+                <br>
+                <h5>New User ?</h5> 
+                <a href="/register">Sign Up</a>
                 <div class="err_msg">{{err_msg}}</div>
             </div>
         </div>

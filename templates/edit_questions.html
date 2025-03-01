@@ -1,6 +1,7 @@
 {% extends 'admin_layout.html' %}
 
 {% block content %}
+<br>
   <div class="container">
     <h4>Questions for Quiz: {{ quiz.name }}</h4>
     <br>
@@ -8,11 +9,10 @@
     {% if questions %}
       <ul class="list-group">
         {% for question in questions %}
-          <li class="list-group-item">
+          <li class="list-group-item d-flex justify-content-between align-items-center">
             <strong>{{ question.question_statement }}</strong>
-            <div class="d-flex justify-content-between">
-              <a href="/edit_question/{{ question.id }}/{{ name }}" class="btn btn-warning btn-sm">Edit</a>
-
+            <div class="d-flex">
+              <a href="/edit_question/{{ question.id }}/{{ name }}" class="btn btn-warning btn-sm me-2">Edit</a>
               <form action="/delete_question/{{ question.id }}/{{ name }}" method="POST" style="display:inline;">
                 <button type="submit" class="btn btn-danger btn-sm">Delete</button>
               </form>

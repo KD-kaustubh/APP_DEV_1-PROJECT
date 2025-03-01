@@ -45,7 +45,7 @@ def signup():
     
     return render_template('signup.html',err_msg="")
 
-#common rotes for admin dashboard
+#common routes for admin dashboard
 @app.route('/admin_dashboard/<name>',methods=['GET','POST'])
 def admin_dashboard(name):
     subjects=get_subjects()
@@ -63,6 +63,8 @@ def user_dashboard(name):
 #---------------------------------------------------------------------------------------------
 
 
+#CRUD OPERATIONS
+#--------------------------------------------------------------------------------------------------
 
 #add_subject routes
 @app.route('/add_subjects/<name>',methods=['GET','POST'])
@@ -128,7 +130,7 @@ def edit_chapter(id, name):
         return redirect(url_for('admin_dashboard', name=name))
     return render_template('edit_chapter.html', name=name, chapter=Chapter.query.get(id))
 
-#add quiz routes not completed
+#add quiz routes
 @app.route('/add_quiz/<chapter_id>/<name>',methods=['GET','POST'])
 def add_quiz(name,chapter_id):
     if request.method == 'POST':
@@ -171,7 +173,8 @@ def add_question(name, quiz_id):
         elif correct_answer == '4':
             correct_answer_value = option4
 
-        new_question = Question(quiz_id=quiz_id,question_statement=question_statement,option1=option1,option2=option2,option3=option3,option4=option4,correct_answer=correct_answer_value)
+        new_question = Question(quiz_id=quiz_id,question_statement=question_statement,
+        option1=option1,option2=option2,option3=option3,option4=option4,correct_answer=correct_answer_value)
         db.session.add(new_question)
         db.session.commit()
 
@@ -184,7 +187,8 @@ def add_question(name, quiz_id):
     return render_template(
         'add_question.html',
         name=name,quiz_id=quiz_id,
-        quiz=Quiz.query.get(quiz_id),option1=request.form.get('option1', ''),option2=request.form.get('option2', ''),option3=request.form.get('option3', ''),option4=request.form.get('option4', ''))
+        quiz=Quiz.query.get(quiz_id),option1=request.form.get('option1', ''),option2=request.form.get('option2', ''),
+        option3=request.form.get('option3', ''),option4=request.form.get('option4', ''))
 
 
 #edit question specific
@@ -237,6 +241,10 @@ def delete_question(question_id, name):
     return redirect(url_for('edit_questions', quiz_id=quiz_id, name=name))
 
 
+
+#QUIZ OPERATIONS
+#--------------------------------------------------------------------------------------------------
+
 #edit quiz
 @app.route('/edit_quiz/<id>/<name>', methods=['GET', 'POST'])
 def edit_quiz(id, name):
@@ -273,7 +281,7 @@ def start_quiz(id, name):
     quiz = Quiz.query.get(id)
     return render_template('start_quiz.html', name=name,quiz=quiz)
 
-#submit quiz complete
+#submit quiz 
 @app.route('/submit_quiz/<id>/<name>', methods=['POST'])
 def submit_quiz(id, name):    
     quiz = Question.query.filter_by(quiz_id=id).all()
@@ -294,7 +302,7 @@ def submit_quiz(id, name):
     return redirect(url_for('quiz', name=name))
 
 
-#SCORES
+#SCORES user specific
 @app.route('/scores/<name>',methods=['GET','POST'])
 def scores(name):
     user=User.query.filter_by(username=name).first()
@@ -302,11 +310,7 @@ def scores(name):
         return redirect(url_for('home'))
     
     user_scores = (
-    db.session.query(Score, Quiz.name)  
-    .join(Quiz, Score.quiz_id == Quiz.id)  
-    .filter(Score.user_id == user.id) 
-    .order_by(Score.time_stamp_of_attempt.desc())  
-    .all())
+    db.session.query(Score, Quiz.name).join(Quiz, Score.quiz_id == Quiz.id)  .filter(Score.user_id == user.id) .order_by(Score.time_stamp_of_attempt.desc()).all())
 
     return render_template('scores.html',name=name,user_scores=user_scores)
 
@@ -372,12 +376,8 @@ def summary(name):
     month_bar_chart_url = base64.b64encode(img_month_bar.getvalue()).decode('utf8')
 
     return render_template(
-        'user_summary.html',
-        name=name,
-        subject_counts=subject_counts,
-        month_counts=month_counts,
-        subject_pie_chart_url=subject_pie_chart_url,
-        month_bar_chart_url=month_bar_chart_url)
+        'user_summary.html',name=name,subject_counts=subject_counts,month_counts=month_counts,
+        subject_pie_chart_url=subject_pie_chart_url,month_bar_chart_url=month_bar_chart_url)
 
 
 #admin summary charts
@@ -483,11 +483,11 @@ def user_search(name):
 
 
 
-#quiz dashboard
+#admin quiz dashboard
 @app.route('/quiz/<name>',methods=['GET','POST'])
 def quiz(name):
     quizzes=Quiz.query.all()
-    return render_template('quiz_dashboard.html',name=name,Quizzes=quizzes)
+    return render_template('admin_quizdashboard.html',name=name,Quizzes=quizzes)
 
 #score dashboard
 @app.route('/score_dashboard/<name>',methods=['GET','POST'])
@@ -518,14 +518,14 @@ def search_by_chapter(search_txt):
 #user search routes
 def search_quiz_by_subject_or_quiz(search_term):
     if search_term:
-        # Search quizzes based on subject name or quiz name
+        #Search quizzes based on subject name or quiz name
         return Quiz.query.join(Chapter).join(Subject).filter((Subject.name.ilike(f'%{search_term}%')) | (Quiz.name.ilike(f'%{search_term}%'))).all()
     return []
 
 
 def search_quiz_by_subject_or_chapter(search_term):
     if search_term:
-        # Search chapters based on the subject name or chapter name
+        #Search chapters based on the subject name or chapter name
         return Chapter.query.join(Subject).filter((Subject.name.ilike(f'%{search_term}%')) | (Chapter.name.ilike(f'%{search_term}%'))).all()
     return []
 
