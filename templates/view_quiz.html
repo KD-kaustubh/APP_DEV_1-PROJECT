@@ -33,6 +33,10 @@
             <label for="duration" class="form-label">Duration (hh:mm)</label>
             <input type="text" class="form-control" id="duration" value="{{ quiz.time_duration }}" readonly>
           </div>
+          <div class="mb-3">
+            <label for="remarks" class="form-label">Remarks</label>
+            <textarea class="form-control" id="remarks" rows='1' readonly>{{ quiz.remarks }}</textarea>
+          </div>
           <div class="mt-4 d-flex justify-content-center">
             <a href="/user_dashboard/{{ name }}" class="btn btn-primary">Close</a>
           </div>
