@@ -1,0 +1,41 @@
+{% extends "admin_layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row justify-content-center mb-5">
+    <div class="col-md-8 text-center">
+      <h2 class="display-6 text-primary">Summary for {{ name | title }}</h2>
+    </div>
+  </div>
+
+  <div class="row justify-content-center">
+    <!-- Subject-wise Quiz Attempts Chart -->
+    <div class="col-lg-5 col-md-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-light text-center">
+          <h5 class="mb-0">Subject-wise Quiz Attempts</h5>
+        </div>
+        <div class="card-body text-center">
+          <img src="data:image/png;base64,{{ subject_pie_chart_url }}" alt="Subject-wise Pie Chart" class="img-fluid rounded">
+        </div>
+      </div>
+    </div>
+
+    <!-- Month-wise Quiz Attempts Chart -->
+    <div class="col-lg-5 col-md-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-light text-center">
+          <h5 class="mb-0">Month-wise Quiz Attempts</h5>
+        </div>
+        <div class="card-body text-center">
+          <img src="data:image/png;base64,{{ month_bar_chart_url }}" alt="Month-wise Bar Chart" class="img-fluid rounded">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center mt-4">
+    <a href="/admin/summary" class="btn btn-primary btn-lg">Back to Admin Dashboard</a>
+  </div>
+</div>
+{% endblock %}

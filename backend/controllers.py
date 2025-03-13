@@ -315,7 +315,55 @@ def scores(name):
     return render_template('scores.html',name=name,user_scores=user_scores)
 
 
+#admin specific user summary routes
 
+@app.route('/admin/user_summary/<int:user_id>', methods=['GET'])
+def user_summary(user_id):
+    user = User.query.get_or_404(user_id)
+
+    # Fetch quiz attempts of the user
+    quiz_attempts = db.session.query(Score.time_stamp_of_attempt, Subject.name.label('subject')) \
+        .join(Quiz, Score.quiz_id == Quiz.id) \
+        .join(Chapter, Quiz.chapter_id == Chapter.id) \
+        .join(Subject, Chapter.subject_id == Subject.id) \
+        .filter(Score.user_id == user_id) \
+        .all()
+
+    month_counts = {}
+    subject_counts = {}
+
+    for time_stamp, subject in quiz_attempts:
+        month = time_stamp.strftime('%B')  # Extract month
+        month_counts[month] = month_counts.get(month, 0) + 1
+        subject_counts[subject] = subject_counts.get(subject, 0) + 1
+
+    # Monthly bar chart
+    fig_month_bar = plt.figure(figsize=(6, 4))
+    plt.bar(month_counts.keys(), month_counts.values(), color='skyblue')
+    plt.xlabel('Month')
+    plt.ylabel('Total Quiz Attempts')
+    plt.title('Quiz Attempts (Monthly)')
+    img_month_bar = io.BytesIO()
+    FigureCanvas(fig_month_bar).print_png(img_month_bar)
+    img_month_bar.seek(0)
+    month_bar_chart_url = base64.b64encode(img_month_bar.getvalue()).decode('utf8')
+
+    # Subject pie chart
+    fig_subject_pie = plt.figure(figsize=(6, 4))
+    plt.pie(subject_counts.values(), labels=subject_counts.keys(), autopct='%1.1f%%', startangle=90)
+    plt.title('Quiz Attempts by Subject')
+    img_subject_pie = io.BytesIO()
+    FigureCanvas(fig_subject_pie).print_png(img_subject_pie)
+    img_subject_pie.seek(0)
+    subject_pie_chart_url = base64.b64encode(img_subject_pie.getvalue()).decode('utf8')
+
+
+    return render_template(
+        'admin_user_summary.html',
+        name=user.full_name,month_bar_chart_url=month_bar_chart_url,subject_pie_chart_url=subject_pie_chart_url,subject_counts=subject_counts,month_counts=month_counts)
+
+
+#-------------------------------------------------------------------------------------------
 #user summary charts
 import matplotlib
 matplotlib.use('Agg')  
@@ -380,19 +428,18 @@ def summary(name):
         subject_pie_chart_url=subject_pie_chart_url,month_bar_chart_url=month_bar_chart_url)
 
 
-#admin summary charts
 @app.route('/admin/summary', methods=['GET'])
 def admin_summary():
-    #permanent admin
+    # Permanent admin
     name = session.get("username", "Admin")  
-    #total user
+    # Total user counts
     total_users = User.query.count()
     total_admins = User.query.filter_by(role=0).count()
     total_students = total_users - total_admins
-    #total quizzes
+    # Total quizzes
     total_quizzes = Quiz.query.count()
 
-    #quiz attempts
+    # Quiz attempts data
     quiz_attempts = db.session.query(Score.time_stamp_of_attempt, Subject.name.label('subject')) \
         .join(Quiz, Score.quiz_id == Quiz.id) \
         .join(Chapter, Quiz.chapter_id == Chapter.id) \
@@ -407,7 +454,7 @@ def admin_summary():
         month_counts[month] = month_counts.get(month, 0) + 1
         subject_counts[subject] = subject_counts.get(subject, 0) + 1
 
-    #monthly bar chart
+    # Monthly bar chart
     fig_month_bar = plt.figure(figsize=(6, 4))
     plt.bar(month_counts.keys(), month_counts.values(), color='skyblue')
     plt.xlabel('Month')
@@ -418,7 +465,7 @@ def admin_summary():
     img_month_bar.seek(0)
     month_bar_chart_url = base64.b64encode(img_month_bar.getvalue()).decode('utf8')
 
-    #subject pie chart
+    # Subject pie chart
     fig_subject_pie = plt.figure(figsize=(6, 4))
     plt.pie(subject_counts.values(), labels=subject_counts.keys(), autopct='%1.1f%%', startangle=90)
     plt.title('Overall Quiz Attempts by Subject')
@@ -427,16 +474,22 @@ def admin_summary():
     img_subject_pie.seek(0)
     subject_pie_chart_url = base64.b64encode(img_subject_pie.getvalue()).decode('utf8')
 
-    #top 5 user avg score per attempt
+    # Top 5 user avg score per attempt
     top_users = db.session.query(
-    User.full_name, 
-    (db.func.sum(Score.total_score) / db.func.count(Score.id)).label("avg_score")).join(Score, User.id == Score.user_id).group_by(User.id) .order_by(db.desc("avg_score")) .limit(5) .all()
+        User.full_name, 
+        (db.func.sum(Score.total_score) / db.func.count(Score.id)).label("avg_score")).join(Score, User.id == Score.user_id).group_by(User.id) .order_by(db.desc("avg_score")) .limit(5) .all()
+
+    # Get the list of all users
+    users_list = User.query.filter(User.role == 1).all()
 
     return render_template(
         'admin_summary.html',
-        name=name,total_users=total_users,total_admins=total_admins,total_students=total_students,
-        total_quizzes=total_quizzes,month_bar_chart_url=month_bar_chart_url,
-        subject_pie_chart_url=subject_pie_chart_url,top_users=top_users)
+        name=name,
+        total_users=total_users,total_admins=total_admins,total_students=total_students,total_quizzes=total_quizzes,
+        month_bar_chart_url=month_bar_chart_url,
+        subject_pie_chart_url=subject_pie_chart_url,top_users=top_users,users_list=users_list  
+    )
+
 
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -39,7 +39,7 @@
       </div>
     </div>
   </div>
-
+  
   <div class="row justify-content-center">
     <div class="col-lg-5">
       <div class="card shadow-sm">
@@ -63,7 +63,7 @@
       </div>
     </div>
   </div>
-
+  <!-- Top 5 Users Table -->
   <div class="row justify-content-center mt-4">
     <div class="col-md-6">
       <div class="card shadow-sm">
@@ -82,7 +82,36 @@
         </div>
       </div>
     </div>
+
+ <!-- Registered Students Table -->
+ <div class="col-md-6">
+  <div class="card shadow-sm">
+    <div class="card-header bg-light text-center">
+      <h5>Registered Students</h5>
+    </div>
+    <div class="card-body">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Full Name</th>
+            <th scope="col">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users_list %}
+            <tr>
+              <th scope="row">{{ loop.index }}</th>
+              <td>{{ user.full_name }}</td>
+              <td><a href="/admin/user_summary/{{ user.id }}" class="btn btn-info btn-sm">View Summary</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
+</div>
+</div>
 
 </div>
 {% endblock %}
