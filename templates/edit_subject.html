@@ -10,19 +10,53 @@
             <h4>Edit Subject</h4>
           </div>
           <div class="card-body">
-            <form action="/edit_subject/{{subject.id}}/{{name}}" method="POST">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+                {% endfor %}
+                <script>
+                  setTimeout(function() {
+                    var alerts = document.querySelectorAll('.alert');
+                    alerts.forEach(function(alert) {
+                      var closeBtn = alert.querySelector('.btn-close');
+                      if (closeBtn) closeBtn.click();
+                    });
+                  }, 3000);
+                </script>
+              {% endif %}
+            {% endwith %}
+            <form method="POST">
+              {{ form.hidden_tag() }}
               <div class="mb-3">
-                <label for="subject_name" class="form-label">Subject Name</label>
-                <input type="text" class="form-control" name="subject_name" id="subject_name" value="{{subject.name}}" required>
+                <label for="name" class="form-label">Subject Name</label>
+                {{ form.name(class_="form-control", value=form.name.data or subject.name) }}
+                {% if form.name.errors %}
+                  <div class="text-danger">
+                    {% for error in form.name.errors %}
+                      <small>{{ error }}</small><br>
+                    {% endfor %}
+                  </div>
+                {% endif %}
               </div>
               <div class="mb-3">
-                <label for="subject_description" class="form-label">Subject Description</label>
-                <input type="text" class="form-control" name="subject_description" id="subject_description" value="{{subject.description}}" required>
+                <label for="description" class="form-label">Subject Description</label>
+                {{ form.description(class_="form-control", value=form.description.data or subject.description) }}
+                {% if form.description.errors %}
+                  <div class="text-danger">
+                    {% for error in form.description.errors %}
+                      <small>{{ error }}</small><br>
+                    {% endfor %}
+                  </div>
+                {% endif %}
               </div>
               <div class="mb-3 d-flex justify-content-between">
                 <button type="submit" class="btn btn-success">Save</button>
 
-                <a href="/admin_dashboard/{{name}}" type="button" class="btn btn-primary">Cancel</a>
+                <a href="/admin_dashboard" type="button" class="btn btn-primary">Cancel</a>
               </div>
             </form>
           </div>

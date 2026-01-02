@@ -10,26 +10,74 @@
               <h4>Edit Quiz</h4>
             </div>
             <div class="card-body">
-              <form action="/edit_quiz/{{ quiz.id }}/{{ name }}" method="POST">
+              {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                  {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                      {{ message }}
+                      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                  {% endfor %}
+                  <script>
+                    setTimeout(function() {
+                      var alerts = document.querySelectorAll('.alert');
+                      alerts.forEach(function(alert) {
+                        var closeBtn = alert.querySelector('.btn-close');
+                        if (closeBtn) closeBtn.click();
+                      });
+                    }, 3000);
+                  </script>
+                {% endif %}
+              {% endwith %}
+              <form method="POST">
+                {{ form.hidden_tag() }}
                 <div class="mb-3">
-                  <label for="quiz_name" class="form-label">Quiz Name</label>
-                  <input type="text" class="form-control" name="quiz_name" id="quiz_name" value="{{ quiz.name }}" required>
+                  <label for="name" class="form-label">Quiz Name</label>
+                  {{ form.name(class_="form-control", value=form.name.data or quiz.name) }}
+                  {% if form.name.errors %}
+                    <div class="text-danger">
+                      {% for error in form.name.errors %}
+                        <small>{{ error }}</small><br>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
                 </div>
                 <div class="mb-3">
                   <label for="date_of_quiz" class="form-label">Date of Quiz</label>
-                  <input type="date" class="form-control" name="date_of_quiz" id="date_of_quiz" value="{{ quiz.date_of_quiz }}" required>
+                  {{ form.date_of_quiz(class_="form-control", value=form.date_of_quiz.data or quiz.date_of_quiz) }}
+                  {% if form.date_of_quiz.errors %}
+                    <div class="text-danger">
+                      {% for error in form.date_of_quiz.errors %}
+                        <small>{{ error }}</small><br>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
                 </div>
                 <div class="mb-3">
                   <label for="time_duration" class="form-label">Time Duration (HH:MM)</label>
-                  <input type="time" class="form-control" name="time_duration" id="time_duration" required>
-              </div>
+                  {{ form.time_duration(class_="form-control", type="time", value=form.time_duration.data or quiz.time_duration) }}
+                  {% if form.time_duration.errors %}
+                    <div class="text-danger">
+                      {% for error in form.time_duration.errors %}
+                        <small>{{ error }}</small><br>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
                 <div class="mb-3">
                   <label for="remarks" class="form-label">Remarks</label>
-                  <textarea class="form-control" name="remarks" id="remarks" rows="3" required>{{ quiz.remarks }}</textarea>
+                  {{ form.remarks(class_="form-control", rows="3", value=form.remarks.data or quiz.remarks) }}
+                  {% if form.remarks.errors %}
+                    <div class="text-danger">
+                      {% for error in form.remarks.errors %}
+                        <small>{{ error }}</small><br>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
                 </div>
                 <div class="mb-3 d-flex justify-content-between">
                   <button type="submit" class="btn btn-success">Save</button>
-                  <a href="/quiz/{{ name }}" type="button" class="btn btn-primary">Cancel</a>
+                  <a href="/admin_dashboard" type="button" class="btn btn-primary">Cancel</a>
                 </div>
               </form>
             </div>

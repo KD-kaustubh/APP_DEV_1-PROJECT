@@ -9,22 +9,52 @@
             <h4>Add Chapters</h4>
           </div>
           <div class="card-body">
-            <form action="/add_chapters/{{chapter_id}}/{{name}}" method="POST">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+                {% endfor %}
+                <script>
+                  setTimeout(function() {
+                    var alerts = document.querySelectorAll('.alert');
+                    alerts.forEach(function(alert) {
+                      var closeBtn = alert.querySelector('.btn-close');
+                      if (closeBtn) closeBtn.click();
+                    });
+                  }, 3000);
+                </script>
+              {% endif %}
+            {% endwith %}
+            <form method="POST">
+              {{ form.hidden_tag() }}
               <div class="mb-3">
-                <label for="chapter_id" class="form-label">chapter ID</label>
-                <input type="number" class="form-control" name="chapter_id" id="chapter_id" value="{{chapter_id}}" readonly>
+                <label for="name" class="form-label">Chapter Name</label>
+                {{ form.name(class_="form-control") }}
+                {% if form.name.errors %}
+                  <div class="text-danger">
+                    {% for error in form.name.errors %}
+                      <small>{{ error }}</small><br>
+                    {% endfor %}
+                  </div>
+                {% endif %}
               </div>
               <div class="mb-3">
-                <label for="chapter_name" class="form-label">Chapter Name</label>
-                <input type="text" class="form-control" name="chapter_name" id="chapter_name" placeholder="chapter Name" required>
-              </div>
-              <div class="mb-3">
-                <label for="chapter_description" class="form-label">Chapter Description</label>
-                <input type="text" class="form-control" name="chapter_description" id="chapter_description" placeholder="chapter Description" required>
+                <label for="description" class="form-label">Chapter Description</label>
+                {{ form.description(class_="form-control") }}
+                {% if form.description.errors %}
+                  <div class="text-danger">
+                    {% for error in form.description.errors %}
+                      <small>{{ error }}</small><br>
+                    {% endfor %}
+                  </div>
+                {% endif %}
               </div>
               <div class="mb-3 d-flex justify-content-between">
                 <button type="submit" class="btn btn-primary">Submit</button>
-                <a href="/admin_dashboard/{{name}}" type="button" class="btn btn-primary">Cancel</a>
+                <a href="/admin_dashboard" type="button" class="btn btn-primary">Cancel</a>
               </div>
             </form>
           </div>

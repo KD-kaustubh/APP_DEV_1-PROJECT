@@ -1,64 +1,114 @@
-#App Routes
+#App Routes - SECURE VERSION with Flask-Login, Bcrypt, and CSRF Protection
 
-from flask import Flask,render_template,request,redirect,url_for,flash,session
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 from .models import *
+from .forms import LoginForm, SignupForm, SubjectForm, ChapterForm, QuizForm, QuestionForm
 from flask import current_app as app
+from flask_login import login_user, logout_user, login_required, current_user
 from datetime import datetime
+from functools import wraps
+import matplotlib
+matplotlib.use('Agg')  
+import matplotlib.pyplot as plt
+import io
+import base64
+from io import BytesIO
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
 #many controller and routes here
+
+def admin_required(f):
+    """Decorator to check if user is admin"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or current_user.role != 0:
+            flash('You do not have permission to access this page.', 'danger')
+            return redirect(url_for('home'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 @app.route('/')
 def home():
     return render_template('index.html')
 
-@app.route('/login',methods=['GET','POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def signin():
-    if request.method == 'POST':
-        uname=request.form.get('user_name')
-        pwd=request.form.get('password')
-        usr= User.query.filter_by(username=uname,password=pwd).first()
-        if usr and usr.role==0: #existed and admin
-            return redirect(url_for('admin_dashboard',name=uname)) 
-        elif usr and usr.role==1: #existed and user
-            return redirect(url_for('user_dashboard',name=uname)) 
-        else:
-            return render_template('login.html',err_msg="Invalid User Credentials")
-
-    return render_template('login.html',err_msg="")
-
-@app.route('/register',methods=['GET','POST'])
-def signup():
-    if request.method == 'POST':
-        uname=request.form.get('user_name')
-        pwd=request.form.get('password')
-        full_name=request.form.get('full_name')
-        qualification=request.form.get('qualification')
-        dob=request.form.get('dob')
-        dob_date = datetime.strptime(dob, '%Y-%m-%d').date()
-        usr= User.query.filter_by(username=uname,password=pwd).first()
-        if usr:
-            return render_template('signup.html',err_msg="User Already Exists")
-        new_usr=User(username=uname,password=pwd,full_name=full_name,qualification=qualification,dob=dob_date)
-        db.session.add(new_usr)
-        db.session.commit()
-        return render_template('login.html',err_msg="Registration Successful, Please Login")
+    if current_user.is_authenticated:
+        return redirect(url_for('admin_dashboard') if current_user.role == 0 else url_for('user_dashboard'))
     
-    return render_template('signup.html',err_msg="")
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        
+        if user and user.check_password(form.password.data) and user.is_active:
+            login_user(user, remember=True)
+            next_page = request.args.get('next')
+            return redirect(next_page) if next_page else (
+                redirect(url_for('admin_dashboard')) if user.role == 0 else redirect(url_for('user_dashboard'))
+            )
+        else:
+            flash('Invalid username or password', 'danger')
+    
+    return render_template('login.html', form=form)
+
+@app.route('/register', methods=['GET', 'POST'])
+def signup():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+    
+    form = SignupForm()
+    if form.validate_on_submit():
+        try:
+            dob_date = datetime.strptime(form.dob.data.isoformat(), '%Y-%m-%d').date()
+            
+            new_user = User(
+                username=form.username.data,
+                full_name=form.full_name.data,
+                qualification=form.qualification.data,
+                dob=dob_date,
+                role=1  # Default role is User
+            )
+            new_user.set_password(form.password.data)  # Hash password
+            
+            db.session.add(new_user)
+            db.session.commit()
+            
+            flash('Registration successful! Please log in.', 'success')
+            return redirect(url_for('signin'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Registration failed: {str(e)}', 'danger')
+    
+    return render_template('signup.html', form=form)
+
+@app.route('/logout')
+@login_required
+def logout():
+    # Clear any existing flash messages before logging out
+    session.pop('_flashes', None)
+    logout_user()
+    flash('You have been logged out successfully.', 'info')
+    return redirect(url_for('home'))
 
 #common routes for admin dashboard
-@app.route('/admin_dashboard/<name>',methods=['GET','POST'])
-def admin_dashboard(name):
-    subjects=get_subjects()
-    return render_template('admin_dashboard.html',name=name,subjects=subjects)
+@app.route('/admin_dashboard', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def admin_dashboard():
+    subjects = get_subjects()
+    return render_template('admin_dashboard.html', name=current_user.username, subjects=subjects)
 
 #common routes for user dashboard
-@app.route('/user_dashboard/<name>',methods=['GET','POST'])
-def user_dashboard(name):
-    quizzes=Quiz.query.order_by(Quiz.date_of_quiz.desc()).all()
-
-    today=datetime.now().date()
+@app.route('/user_dashboard', methods=['GET', 'POST'])
+@login_required
+def user_dashboard():
+    if current_user.role == 0:  # If admin, redirect to admin dashboard
+        return redirect(url_for('admin_dashboard'))
     
-    return render_template('user_dashboard.html',name=name,quizzes=quizzes,today=today)
+    quizzes = Quiz.query.order_by(Quiz.date_of_quiz.desc()).all()
+    today = datetime.now().date()
+    
+    return render_template('user_dashboard.html', name=current_user.username, quizzes=quizzes, today=today)
 
 #---------------------------------------------------------------------------------------------
 
@@ -67,178 +117,274 @@ def user_dashboard(name):
 #--------------------------------------------------------------------------------------------------
 
 #add_subject routes
-@app.route('/add_subjects/<name>',methods=['GET','POST'])
-def add_subjects(name):
-    if request.method == 'POST':
-        sub_name=request.form.get('subject_name')
-        sub_description=request.form.get('subject_description')
-        new_sub=Subject(name=sub_name,description=sub_description)
-        db.session.add(new_sub)
-        db.session.commit()
-        return redirect(url_for('admin_dashboard',name=name))
+@app.route('/add_subjects', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def add_subjects():
+    form = SubjectForm()
+    if form.validate_on_submit():
+        try:
+            new_sub = Subject(name=form.name.data, description=form.description.data)
+            db.session.add(new_sub)
+            db.session.commit()
+            flash('Subject added successfully!', 'success')
+            return redirect(url_for('admin_dashboard'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Failed to add subject: {str(e)}', 'danger')
     
-    return render_template('add_subjects.html',name=name)
+    return render_template('add_subjects.html', form=form, name=current_user.username)
 
 #add_chapters routes
-@app.route('/add_chapters/<chapter_id>/<name>',methods=['GET','POST'])
-def add_chapters(name,chapter_id):
-    if request.method == 'POST':
-        chapter_name=request.form.get('chapter_name')
-        chapter_description=request.form.get('chapter_description')
-        new_chapter=Chapter(subject_id=chapter_id,name=chapter_name,description=chapter_description)
-        db.session.add(new_chapter)
-        db.session.commit()
-        return redirect(url_for('admin_dashboard',name=name))
+@app.route('/add_chapters/<int:chapter_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def add_chapters(chapter_id):
+    form = ChapterForm()
+    if form.validate_on_submit():
+        try:
+            new_chapter = Chapter(
+                subject_id=chapter_id,
+                name=form.name.data,
+                description=form.description.data
+            )
+            db.session.add(new_chapter)
+            db.session.commit()
+            flash('Chapter added successfully!', 'success')
+            return redirect(url_for('admin_dashboard'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Failed to add chapter: {str(e)}', 'danger')
     
-    return render_template('add_chapters.html',name=name,chapter_id=chapter_id)
+    return render_template('add_chapters.html', form=form, name=current_user.username, chapter_id=chapter_id)
 
 #edit_subject routes
-@app.route('/edit_subject/<id>/<name>', methods=['GET', 'POST'])
-def edit_subject(id, name):
-    if request.method == 'POST':
-        subject = Subject.query.get(id)
-        subject.name = request.form.get('subject_name')
-        subject.description = request.form.get('subject_description')
-        db.session.commit()
-        return redirect(url_for('admin_dashboard', name=name))
-    return render_template('edit_subject.html', name=name, subject=Subject.query.get(id))
+@app.route('/edit_subject/<int:id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_subject(id):
+    subject = Subject.query.get_or_404(id)
+    form = SubjectForm()
+    
+    if form.validate_on_submit():
+        try:
+            subject.name = form.name.data
+            subject.description = form.description.data
+            db.session.commit()
+            flash('Subject updated successfully!', 'success')
+            return redirect(url_for('admin_dashboard'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Failed to update subject: {str(e)}', 'danger')
+    elif request.method == 'GET':
+        form.name.data = subject.name
+        form.description.data = subject.description
+    
+    return render_template('edit_subject.html', name=current_user.username, subject=subject, form=form)
 
 #delete subject
-@app.route('/delete_subject/<id>/<name>', methods=['GET', 'POST'])
-def delete_subject(id, name):    
-    subject = Subject.query.get(id)
-    db.session.delete(subject)
-    db.session.commit()
-    return redirect(url_for('admin_dashboard', name=name))
+@app.route('/delete_subject/<int:id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def delete_subject(id):    
+    subject = Subject.query.get_or_404(id)
+    try:
+        db.session.delete(subject)
+        db.session.commit()
+        flash('Subject deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Failed to delete subject: {str(e)}', 'danger')
+    
+    return redirect(url_for('admin_dashboard'))
 
 #delete chapter
-@app.route('/delete_chapter/<id>/<name>', methods=['GET', 'POST'])
-def delete_chapter(id, name):    
-    chapter = Chapter.query.get(id)
-    db.session.delete(chapter)
-    db.session.commit()
-    return redirect(url_for('admin_dashboard', name=name))
+@app.route('/delete_chapter/<int:id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def delete_chapter(id):    
+    chapter = Chapter.query.get_or_404(id)
+    try:
+        db.session.delete(chapter)
+        db.session.commit()
+        flash('Chapter deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Failed to delete chapter: {str(e)}', 'danger')
+    
+    return redirect(url_for('admin_dashboard'))
 
 #edit chapter routes 
-@app.route('/edit_chapter/<id>/<name>', methods=['GET', 'POST'])
-def edit_chapter(id, name):
-    if request.method == 'POST':
-        chapter = Chapter.query.get(id)
-        chapter.name = request.form.get('chapter_name')
-        chapter.description = request.form.get('chapter_description')
-        db.session.commit()
-        return redirect(url_for('admin_dashboard', name=name))
-    return render_template('edit_chapter.html', name=name, chapter=Chapter.query.get(id))
+@app.route('/edit_chapter/<int:id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_chapter(id):
+    chapter = Chapter.query.get_or_404(id)
+    form = ChapterForm()
+    
+    if form.validate_on_submit():
+        try:
+            chapter.name = form.name.data
+            chapter.description = form.description.data
+            db.session.commit()
+            flash('Chapter updated successfully!', 'success')
+            return redirect(url_for('admin_dashboard'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Failed to update chapter: {str(e)}', 'danger')
+    elif request.method == 'GET':
+        form.name.data = chapter.name
+        form.description.data = chapter.description
+    
+    return render_template('edit_chapter.html', name=current_user.username, chapter=chapter, form=form)
 
 #add quiz routes
-@app.route('/add_quiz/<chapter_id>/<name>',methods=['GET','POST'])
-def add_quiz(name,chapter_id):
-    if request.method == 'POST':
-        quiz_name=request.form.get('quiz_name')
-        date=request.form.get('date_of_quiz')
-        date_of_quiz=datetime.strptime(date, '%Y-%m-%d').date()
-
-        time_duration=request.form.get('time_duration')
-        time_duration = datetime.strptime(time_duration, "%H:%M").time()
-
-        remarks=request.form.get('remarks')
-        new_quiz=Quiz(chapter_id=chapter_id,name=quiz_name,date_of_quiz=date_of_quiz,time_duration=time_duration,remarks=remarks)
-        db.session.add(new_quiz)
-        db.session.commit()
-
-        flash('Quiz added successfully!', 'success')
-        return redirect(url_for('admin_dashboard',name=name))
+@app.route('/add_quiz/<int:chapter_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def add_quiz(chapter_id):
+    form = QuizForm()
+    if form.validate_on_submit():
+        try:
+            date_of_quiz = datetime.strptime(form.date_of_quiz.data.isoformat(), '%Y-%m-%d').date()
+            time_duration = datetime.strptime(form.time_duration.data, "%H:%M").time()
+            
+            new_quiz = Quiz(
+                chapter_id=chapter_id,
+                name=form.name.data,
+                date_of_quiz=date_of_quiz,
+                time_duration=time_duration,
+                remarks=form.remarks.data
+            )
+            db.session.add(new_quiz)
+            db.session.commit()
+            flash('Quiz added successfully!', 'success')
+            return redirect(url_for('admin_dashboard'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Failed to add quiz: {str(e)}', 'danger')
     
-    return render_template('add_quiz.html',name=name,chapter_id=chapter_id)
+    return render_template('add_quiz.html', form=form, name=current_user.username, chapter_id=chapter_id)
 
 
 
 #add question 
-@app.route('/add_question/<quiz_id>/<name>', methods=['GET', 'POST'])
-def add_question(name, quiz_id):
-    if request.method == 'POST':
-        question_statement = request.form.get('question_statement')
-        option1 = request.form.get('option1')
-        option2 = request.form.get('option2')
-        option3 = request.form.get('option3')
-        option4 = request.form.get('option4')
-        correct_answer = request.form.get('correct_answer') 
-
-        if correct_answer == '1':
-            correct_answer_value = option1
-        elif correct_answer == '2':
-            correct_answer_value = option2
-        elif correct_answer == '3':
-            correct_answer_value = option3
-        elif correct_answer == '4':
-            correct_answer_value = option4
-
-        new_question = Question(quiz_id=quiz_id,question_statement=question_statement,
-        option1=option1,option2=option2,option3=option3,option4=option4,correct_answer=correct_answer_value)
-        db.session.add(new_question)
-        db.session.commit()
-
-        action = request.form.get('action')
-        if action == 'save_next':
-            return redirect(url_for('add_question', name=name, quiz_id=quiz_id))
-        elif action == 'submit':
-            return redirect(url_for('quiz', name=name))
-
+@app.route('/add_question/<int:quiz_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def add_question(quiz_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+    form = QuestionForm()
+    
+    if form.validate_on_submit():
+        try:
+            # Get correct answer based on selection
+            correct_answer_map = {
+                '1': form.option1.data,
+                '2': form.option2.data,
+                '3': form.option3.data,
+                '4': form.option4.data
+            }
+            correct_answer = correct_answer_map.get(form.correct_answer.data)
+            
+            new_question = Question(
+                quiz_id=quiz_id,
+                question_statement=form.question_statement.data,
+                option1=form.option1.data,
+                option2=form.option2.data,
+                option3=form.option3.data,
+                option4=form.option4.data,
+                correct_answer=correct_answer
+            )
+            db.session.add(new_question)
+            db.session.commit()
+            
+            flash('Question added successfully!', 'success')
+            
+            # Determine action
+            if request.form.get('action') == 'save_next':
+                return redirect(url_for('add_question', quiz_id=quiz_id))
+            else:
+                return redirect(url_for('quiz'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Failed to add question: {str(e)}', 'danger')
+    
     return render_template(
         'add_question.html',
-        name=name,quiz_id=quiz_id,
-        quiz=Quiz.query.get(quiz_id),option1=request.form.get('option1', ''),option2=request.form.get('option2', ''),
-        option3=request.form.get('option3', ''),option4=request.form.get('option4', ''))
+        form=form,
+        name=current_user.username,
+        quiz_id=quiz_id,
+        quiz=quiz
+    )
 
 
 #edit question specific
-@app.route('/edit_question/<question_id>/<name>', methods=['GET', 'POST'])
-def edit_question(question_id, name):
-    question = Question.query.get(question_id)
-    if not question: 
-        return redirect(url_for('edit_questions', quiz_id=question.quiz_id, name=name))
-
-    quiz = Quiz.query.get(question.quiz_id)  
+@app.route('/edit_question/<int:question_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_question(question_id):
+    question = Question.query.get_or_404(question_id)
+    quiz = Quiz.query.get_or_404(question.quiz_id)
+    form = QuestionForm()
     
-    if request.method == 'POST':
-        question.question_statement = request.form.get('question_statement')
-        question.option1 = request.form.get('option1')
-        question.option2 = request.form.get('option2')
-        question.option3 = request.form.get('option3')
-        question.option4 = request.form.get('option4')
-        
-        correct_answer = request.form.get('correct_answer')
-        if correct_answer == '1':
-            question.correct_answer = question.option1
-        elif correct_answer == '2':
-            question.correct_answer = question.option2
-        elif correct_answer == '3':
-            question.correct_answer = question.option3
-        elif correct_answer == '4':
-            question.correct_answer = question.option4
-        
-        db.session.commit()
-        return redirect(url_for('edit_questions', quiz_id=question.quiz_id, name=name))  
-
-    return render_template('edit_question.html', name=name, question=question, quiz=quiz)
+    if form.validate_on_submit():
+        try:
+            question.question_statement = form.question_statement.data
+            question.option1 = form.option1.data
+            question.option2 = form.option2.data
+            question.option3 = form.option3.data
+            question.option4 = form.option4.data
+            
+            correct_answer_map = {
+                '1': form.option1.data,
+                '2': form.option2.data,
+                '3': form.option3.data,
+                '4': form.option4.data
+            }
+            question.correct_answer = correct_answer_map.get(form.correct_answer.data)
+            
+            db.session.commit()
+            flash('Question updated successfully!', 'success')
+            return redirect(url_for('edit_questions', quiz_id=question.quiz_id))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Failed to update question: {str(e)}', 'danger')
+    elif request.method == 'GET':
+        form.question_statement.data = question.question_statement
+        form.option1.data = question.option1
+        form.option2.data = question.option2
+        form.option3.data = question.option3
+        form.option4.data = question.option4
+    
+    return render_template('edit_question.html', name=current_user.username, question=question, quiz=quiz, form=form)
 
 # edit all questions specific quiz
-@app.route('/edit_questions/<quiz_id>/<name>', methods=['GET'])
-def edit_questions(quiz_id, name):
-    quiz = Quiz.query.get(quiz_id)  
+@app.route('/edit_questions/<int:quiz_id>', methods=['GET'])
+@login_required
+@admin_required
+def edit_questions(quiz_id):
+    quiz = Quiz.query.get_or_404(quiz_id)  
     questions = Question.query.filter_by(quiz_id=quiz_id).all()  
 
-    return render_template('edit_questions.html', quiz=quiz, questions=questions, name=name)
+    return render_template('edit_questions.html', quiz=quiz, questions=questions, name=current_user.username)
 
 #delete specific question
-@app.route('/delete_question/<question_id>/<name>', methods=['GET', 'POST'])
-def delete_question(question_id, name):
-    question = Question.query.get(question_id)
-    if question:
-        quiz_id = question.quiz_id
+@app.route('/delete_question/<int:question_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def delete_question(question_id):
+    question = Question.query.get_or_404(question_id)
+    quiz_id = question.quiz_id
+    try:
         db.session.delete(question)
         db.session.commit()
-    return redirect(url_for('edit_questions', quiz_id=quiz_id, name=name))
+        flash('Question deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Failed to delete question: {str(e)}', 'danger')
+    
+    return redirect(url_for('edit_questions', quiz_id=quiz_id))
 
 
 
@@ -246,78 +392,127 @@ def delete_question(question_id, name):
 #--------------------------------------------------------------------------------------------------
 
 #edit quiz
-@app.route('/edit_quiz/<id>/<name>', methods=['GET', 'POST'])
-def edit_quiz(id, name):
-    if request.method == 'POST':
-        quiz = Quiz.query.get(id)
-        quiz.name = request.form.get('quiz_name')
-        quiz.date_of_quiz = request.form.get('date_of_quiz')
-        quiz.date_of_quiz = datetime.strptime(quiz.date_of_quiz, '%Y-%m-%d').date()
-        time_str=request.form.get('time_duration')
-        time_obj = datetime.strptime(time_str, "%H:%M").time()
-        quiz.time_duration = time_obj
-        quiz.remarks = request.form.get('remarks')
-        db.session.commit()
-        return redirect(url_for('quiz', name=name))
-    return render_template('edit_quiz.html', name=name, quiz=Quiz.query.get(id))
+@app.route('/edit_quiz/<int:id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_quiz(id):
+    quiz = Quiz.query.get_or_404(id)
+    form = QuizForm()
+    
+    if form.validate_on_submit():
+        try:
+            quiz.name = form.name.data
+            quiz.date_of_quiz = datetime.strptime(form.date_of_quiz.data.isoformat(), '%Y-%m-%d').date()
+            quiz.time_duration = datetime.strptime(form.time_duration.data, "%H:%M").time()
+            quiz.remarks = form.remarks.data
+            db.session.commit()
+            flash('Quiz updated successfully!', 'success')
+            return redirect(url_for('quiz'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Failed to update quiz: {str(e)}', 'danger')
+    elif request.method == 'GET':
+        form.name.data = quiz.name
+        form.date_of_quiz.data = quiz.date_of_quiz
+        form.remarks.data = quiz.remarks
+    
+    return render_template('edit_quiz.html', name=current_user.username, quiz=quiz, form=form)
 
 #delete quiz
-@app.route('/delete_quiz/<id>/<name>', methods=['GET', 'POST'])
-def delete_quiz(id, name):    
-    quiz = Quiz.query.get(id)
-    db.session.delete(quiz)
-    db.session.commit()
-    return redirect(url_for('quiz', name=name))
+@app.route('/delete_quiz/<int:id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def delete_quiz(id):    
+    quiz = Quiz.query.get_or_404(id)
+    try:
+        db.session.delete(quiz)
+        db.session.commit()
+        flash('Quiz deleted successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Failed to delete quiz: {str(e)}', 'danger')
+    
+    return redirect(url_for('quiz'))
 
 #view quiz
-@app.route('/view_quiz/<id>/<name>', methods=['GET', 'POST'])
-def view_quiz(id, name):    
-    quiz = Quiz.query.get(id)
-    return render_template('view_quiz.html', name=name,quiz=quiz)
+@app.route('/view_quiz/<int:id>', methods=['GET', 'POST'])
+@login_required
+def view_quiz(id):    
+    quiz = Quiz.query.get_or_404(id)
+    return render_template('view_quiz.html', name=current_user.username, quiz=quiz)
 
 #start quiz
-@app.route('/start_quiz/<id>/<name>', methods=['GET', 'POST'])
-def start_quiz(id, name):    
-    quiz = Quiz.query.get(id)
-    return render_template('start_quiz.html', name=name,quiz=quiz)
+@app.route('/start_quiz/<int:id>', methods=['GET', 'POST'])
+@login_required
+def start_quiz(id):    
+    quiz = Quiz.query.get_or_404(id)
+    return render_template('start_quiz.html', name=current_user.username, quiz=quiz)
 
 #submit quiz 
-@app.route('/submit_quiz/<id>/<name>', methods=['POST'])
-def submit_quiz(id, name):    
-    quiz = Question.query.filter_by(quiz_id=id).all()
-    user=User.query.filter_by(username=name).first()
-
-    if quiz and user:
-        total_score=0
-        for question in quiz:
+@app.route('/submit_quiz/<int:id>', methods=['POST'])
+@login_required
+def submit_quiz(id):    
+    quiz_questions = Question.query.filter_by(quiz_id=id).all()
+    
+    if quiz_questions and current_user:
+        total_score = 0
+        for question in quiz_questions:
             user_answer = request.form.get(f'question_{question.id}')
-            if user_answer==question.correct_answer:
-                total_score+=1
-        new_score=Score(quiz_id=id,user_id=user.id,time_stamp_of_attempt=datetime.now(),total_score=total_score)
-        db.session.add(new_score)
-        db.session.commit()
+            # Debug: Print comparison
+            print(f"Question {question.id}:")
+            print(f"  User answer: '{user_answer}' (type: {type(user_answer)})")
+            print(f"  Correct answer: '{question.correct_answer}' (type: {type(question.correct_answer)})")
+            print(f"  Match: {user_answer == question.correct_answer}")
+            
+            if user_answer and user_answer.strip() == question.correct_answer.strip():
+                total_score += 1
+                print(f"  ✓ Correct!")
+            else:
+                print(f"  ✗ Wrong")
+        
+        print(f"Total score: {total_score} out of {len(quiz_questions)}")
+        
+        try:
+            new_score = Score(
+                quiz_id=id,
+                user_id=current_user.id,
+                time_stamp_of_attempt=datetime.now(),
+                total_score=total_score
+            )
+            db.session.add(new_score)
+            db.session.commit()
+            flash('Quiz submitted successfully!', 'success')
+            return redirect(url_for('scores'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Failed to submit quiz: {str(e)}', 'danger')
 
-        return redirect(url_for('scores', name=name))
-
-    return redirect(url_for('quiz', name=name))
+    return redirect(url_for('user_dashboard'))
 
 
 #SCORES user specific
-@app.route('/scores/<name>',methods=['GET','POST'])
-def scores(name):
-    user=User.query.filter_by(username=name).first()
-    if not user:
-        return redirect(url_for('home'))
+@app.route('/scores', methods=['GET', 'POST'])
+@login_required
+def scores():
+    if current_user.role == 0:  # If admin, redirect to admin summary
+        return redirect(url_for('admin_summary'))
     
     user_scores = (
-    db.session.query(Score, Quiz.name).join(Quiz, Score.quiz_id == Quiz.id)  .filter(Score.user_id == user.id) .order_by(Score.time_stamp_of_attempt.desc()).all())
+        db.session.query(Score, Quiz.name)
+        .join(Quiz, Score.quiz_id == Quiz.id)
+        .filter(Score.user_id == current_user.id)
+        .order_by(Score.time_stamp_of_attempt.desc())
+        .all()
+    )
 
-    return render_template('scores.html',name=name,user_scores=user_scores)
+    return render_template('scores.html', name=current_user.username, user_scores=user_scores)
 
 
 #admin specific user summary routes
 
 @app.route('/admin/user_summary/<int:user_id>', methods=['GET'])
+@login_required
+@admin_required
 def user_summary(user_id):
     user = User.query.get_or_404(user_id)
 
@@ -365,20 +560,11 @@ def user_summary(user_id):
 
 #-------------------------------------------------------------------------------------------
 #user summary charts
-import matplotlib
-matplotlib.use('Agg')  
-import matplotlib.pyplot as plt
-import io
-import base64
-from flask import render_template, redirect, url_for
-from io import BytesIO
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-
-@app.route('/summary/<name>', methods=['GET'])
-def summary(name):
-    user = User.query.filter_by(username=name).first()
-    if not user:
-        return redirect(url_for('home'))
+@app.route('/summary', methods=['GET'])
+@login_required
+def summary():
+    if current_user.role == 0:  # If admin, redirect to admin summary
+        return redirect(url_for('admin_summary'))
     
     #all quizzes by user with subject from chapter
     user_scores = (
@@ -386,7 +572,7 @@ def summary(name):
         .join(Quiz, Score.quiz_id == Quiz.id)
         .join(Chapter, Quiz.chapter_id == Chapter.id)  
         .join(Subject, Chapter.subject_id == Subject.id) 
-        .filter(Score.user_id == user.id)
+        .filter(Score.user_id == current_user.id)
         .all())
 
     subject_counts = {}
@@ -424,14 +610,14 @@ def summary(name):
     month_bar_chart_url = base64.b64encode(img_month_bar.getvalue()).decode('utf8')
 
     return render_template(
-        'user_summary.html',name=name,subject_counts=subject_counts,month_counts=month_counts,
+        'user_summary.html',name=current_user.username,subject_counts=subject_counts,month_counts=month_counts,
         subject_pie_chart_url=subject_pie_chart_url,month_bar_chart_url=month_bar_chart_url)
 
 
 @app.route('/admin/summary', methods=['GET'])
+@login_required
+@admin_required
 def admin_summary():
-    # Permanent admin
-    name = session.get("username", "Admin")  
     # Total user counts
     total_users = User.query.count()
     total_admins = User.query.filter_by(role=0).count()
@@ -484,7 +670,7 @@ def admin_summary():
 
     return render_template(
         'admin_summary.html',
-        name=name,
+        name=current_user.username,
         total_users=total_users,total_admins=total_admins,total_students=total_students,total_quizzes=total_quizzes,
         month_bar_chart_url=month_bar_chart_url,
         subject_pie_chart_url=subject_pie_chart_url,top_users=top_users,users_list=users_list  
@@ -500,23 +686,26 @@ def admin_summary():
 
 #searching routes
 #admin search
-@app.route('/adminsearch/<name>',methods=['GET','POST'])
-def search(name):
+@app.route('/adminsearch', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def search():
     if request.method == 'POST':
-        search_txt=request.form.get('search_txt')
-        by_subject=search_by_subject(search_txt)
-        by_chapter=search_by_chapter(search_txt)
+        search_txt = request.form.get('search_txt', '').strip()
+        by_subject = search_by_subject(search_txt)
+        by_chapter = search_by_chapter(search_txt)
         if by_subject:
-            return render_template('admin_dashboard.html',name=name,subjects=by_subject)
+            return render_template('admin_dashboard.html', name=current_user.username, subjects=by_subject)
         elif by_chapter:
-            return render_template('admin_dashboard.html',name=name,subjects=by_chapter)
-    return redirect(url_for('admin_dashboard',name=name))
+            return render_template('admin_dashboard.html', name=current_user.username, subjects=by_chapter)
+    return redirect(url_for('admin_dashboard'))
 
 #user search
-@app.route('/usersearch/<name>', methods=['GET', 'POST'])
-def user_search(name):
+@app.route('/usersearch', methods=['GET', 'POST'])
+@login_required
+def user_search():
     if request.method == 'POST':
-        search_txt = request.form.get('search_txt')
+        search_txt = request.form.get('search_txt', '').strip()
         
         if search_txt:
             # Search in quizzes by subject or quiz name
@@ -525,9 +714,9 @@ def user_search(name):
             chapters = search_quiz_by_subject_or_chapter(search_txt)
             
             today = datetime.now().date()
-            return render_template('user_dashboard.html', name=name, quizzes=quizzes, chapters=chapters, today=today)
+            return render_template('user_dashboard.html', name=current_user.username, quizzes=quizzes, chapters=chapters, today=today)
     
-    return redirect(url_for('user_dashboard', name=name))
+    return redirect(url_for('user_dashboard'))
 
 
         
@@ -537,35 +726,39 @@ def user_search(name):
 
 
 #admin quiz dashboard
-@app.route('/quiz/<name>',methods=['GET','POST'])
-def quiz(name):
-    quizzes=Quiz.query.all()
-    return render_template('admin_quizdashboard.html',name=name,Quizzes=quizzes)
+@app.route('/quiz', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def quiz():
+    quizzes = Quiz.query.all()
+    return render_template('admin_quizdashboard.html', name=current_user.username, Quizzes=quizzes)
 
 #score dashboard
-@app.route('/score_dashboard/<name>',methods=['GET','POST'])
-def score_dashboard(name):
-    scores=Score.query.all()
-    return render_template('scores.html',name=name,scores=scores)
+@app.route('/score_dashboard', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def score_dashboard():
+    scores = Score.query.all()
+    return render_template('scores.html', name=current_user.username, scores=scores)
 
 
 #-------------------------------------------------------------------------------------------
 #other supported functions
 def get_subjects():
-    subjects=Subject.query.all()
+    subjects = Subject.query.all()
     return subjects 
 
 def get_quiz():
-    quizzes=Quiz.query.all()
+    quizzes = Quiz.query.all()
     return quizzes
 
 def search_by_subject(search_txt):
-    subjects=Subject.query.filter(Subject.name.ilike(f"%{search_txt}%")).all()
+    subjects = Subject.query.filter(Subject.name.ilike(f"%{search_txt}%")).all()
     return subjects
 
 def search_by_chapter(search_txt):
-    chapters=Chapter.query.filter(Chapter.name.ilike(f"%{search_txt}%")).all()
-    subjects=[chapter.subject for chapter in chapters]
+    chapters = Chapter.query.filter(Chapter.name.ilike(f"%{search_txt}%")).all()
+    subjects = [chapter.subject for chapter in chapters]
     return subjects
 
 #user search routes

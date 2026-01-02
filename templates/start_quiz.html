@@ -16,7 +16,7 @@
           </div>
         </div>
         <div class="card-body">
-          <form action="/submit_quiz/{{ quiz.id }}/{{ name }}" method="POST">
+          <form method="POST" action="/submit_quiz/{{ quiz.id }}">
             {% for question in quiz.questions %}
             <div class="mb-4 p-3 rounded shadow-sm bg-light">
               <div class="d-flex flex-column">
@@ -54,7 +54,7 @@
             {% endfor %}
             <div class="text-center mt-5">
               <button type="submit" class="btn btn-success btn-lg px-5" id="submitBtn">Submit Quiz</button>
-              <a href="/user_dashboard/{{ name }}" class="btn btn-danger btn-lg px-5">Cancel</a>
+              <a href="/user_dashboard" class="btn btn-danger btn-lg px-5">Cancel</a>
             </div>
           </form>
         </div>

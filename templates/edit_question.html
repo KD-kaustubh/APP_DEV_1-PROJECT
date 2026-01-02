@@ -4,46 +4,104 @@
   <div class="container">
     <h4>Edit Question for Quiz: {{ quiz.name }}</h4>
     
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+        <script>
+          setTimeout(function() {
+            var alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+              var closeBtn = alert.querySelector('.btn-close');
+              if (closeBtn) closeBtn.click();
+            });
+          }, 3000);
+        </script>
+      {% endif %}
+    {% endwith %}
+    
     <!-- Form for editing question -->
-    <form action="/edit_question/{{ question.id }}/{{ name }}" method="POST">
+    <form method="POST">
+      {{ form.hidden_tag() }}
       <div class="mb-3">
         <label for="question_statement" class="form-label">Question Statement</label>
-        <textarea class="form-control" name="question_statement" id="question_statement" rows="3" required>{{ question.question_statement }}</textarea>
+        {{ form.question_statement(class_="form-control", rows="3", value=form.question_statement.data or question.question_statement) }}
+        {% if form.question_statement.errors %}
+          <div class="text-danger">
+            {% for error in form.question_statement.errors %}
+              <small>{{ error }}</small><br>
+            {% endfor %}
+          </div>
+        {% endif %}
       </div>
       
       <div class="mb-3">
         <label for="option1" class="form-label">Option 1</label>
-        <input type="text" class="form-control" name="option1" id="option1" value="{{ question.option1 }}" required>
+        {{ form.option1(class_="form-control", value=form.option1.data or question.option1) }}
+        {% if form.option1.errors %}
+          <div class="text-danger">
+            {% for error in form.option1.errors %}
+              <small>{{ error }}</small><br>
+            {% endfor %}
+          </div>
+        {% endif %}
       </div>
       
       <div class="mb-3">
         <label for="option2" class="form-label">Option 2</label>
-        <input type="text" class="form-control" name="option2" id="option2" value="{{ question.option2 }}" required>
+        {{ form.option2(class_="form-control", value=form.option2.data or question.option2) }}
+        {% if form.option2.errors %}
+          <div class="text-danger">
+            {% for error in form.option2.errors %}
+              <small>{{ error }}</small><br>
+            {% endfor %}
+          </div>
+        {% endif %}
       </div>
       
       <div class="mb-3">
         <label for="option3" class="form-label">Option 3</label>
-        <input type="text" class="form-control" name="option3" id="option3" value="{{ question.option3 }}" required>
+        {{ form.option3(class_="form-control", value=form.option3.data or question.option3) }}
+        {% if form.option3.errors %}
+          <div class="text-danger">
+            {% for error in form.option3.errors %}
+              <small>{{ error }}</small><br>
+            {% endfor %}
+          </div>
+        {% endif %}
       </div>
       
       <div class="mb-3">
         <label for="option4" class="form-label">Option 4</label>
-        <input type="text" class="form-control" name="option4" id="option4" value="{{ question.option4 }}" required>
+        {{ form.option4(class_="form-control", value=form.option4.data or question.option4) }}
+        {% if form.option4.errors %}
+          <div class="text-danger">
+            {% for error in form.option4.errors %}
+              <small>{{ error }}</small><br>
+            {% endfor %}
+          </div>
+        {% endif %}
       </div>
 
       <div class="mb-3">
         <label for="correct_answer" class="form-label">Correct Answer</label>
-        <select class="form-control" name="correct_answer" id="correct_answer" required>
-          <option value="1" {% if question.correct_answer == question.option1 %}selected{% endif %}>Option 1</option>
-          <option value="2" {% if question.correct_answer == question.option2 %}selected{% endif %}>Option 2</option>
-          <option value="3" {% if question.correct_answer == question.option3 %}selected{% endif %}>Option 3</option>
-          <option value="4" {% if question.correct_answer == question.option4 %}selected{% endif %}>Option 4</option>
-        </select>
+        {{ form.correct_answer(class_="form-control") }}
+        {% if form.correct_answer.errors %}
+          <div class="text-danger">
+            {% for error in form.correct_answer.errors %}
+              <small>{{ error }}</small><br>
+            {% endfor %}
+          </div>
+        {% endif %}
       </div>
 
       <div class="mb-3 d-flex justify-content-between">
         <button type="submit" class="btn btn-success">Save</button>
-        <a href="/edit_questions/{{ quiz.id }}/{{ name }}" type="button" class="btn btn-primary">Cancel</a>
+        <a href="/admin_dashboard" type="button" class="btn btn-primary">Cancel</a>
       </div>
     </form>
   </div>

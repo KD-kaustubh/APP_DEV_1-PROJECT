@@ -1,10 +1,27 @@
 from flask import Flask
-from backend.models import db
+from backend.models import db, bcrypt, User
+from flask_login import LoginManager
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from dotenv import load_dotenv
 import os
 
 # Declare app globally
 app = Flask(__name__)
+
+# Initialize rate limiter for brute force protection
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"]
+)
+
+# Initialize Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'signin'
+login_manager.login_message = 'Please log in to access this page.'
+login_manager.login_message_category = 'info'
 
 def setup_app():
     # Load environment variables from .env file
@@ -12,11 +29,24 @@ def setup_app():
 
     # Set the configuration for SQLAlchemy and secret key from environment variables
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///quizmaster.sqlite3')  # Database URI from .env
-    app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'your_default_secret_key')  # Secret key from .env
+    app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'your_default_secret_key_change_this')  # Secret key from .env
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Disable modification tracking
+    
+    # Security configurations
+    app.config['SESSION_COOKIE_SECURE'] = os.getenv('SESSION_COOKIE_SECURE', 'False') == 'True'  # HTTPS only
+    app.config['SESSION_COOKIE_HTTPONLY'] = True  # Prevent JavaScript access
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # CSRF protection
+    app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hour session timeout
+    app.config['WTF_CSRF_TIME_LIMIT'] = None  # No time limit on CSRF tokens
 
-    # Initialize the SQLAlchemy object with the app
+    # Initialize extensions with app
     db.init_app(app)
+    bcrypt.init_app(app)
+
+    # User loader for Flask-Login
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
 
     # Direct access to other models
     app.app_context().push()

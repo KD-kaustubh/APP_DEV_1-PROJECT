@@ -2,8 +2,11 @@
 
 from flask_sqlalchemy import SQLAlchemy
 from datetime import time
+from flask_login import UserMixin
+from flask_bcrypt import Bcrypt
 
 db = SQLAlchemy()
+bcrypt = Bcrypt()
 
 '''
 User is parent of Score
@@ -13,18 +16,31 @@ Quiz is parent of Question and Score
 '''
 
 # User model
-class User(db.Model):
+class User(UserMixin, db.Model):
     __tablename__ = "user"
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    password = db.Column(db.String(80), nullable=False)
+    password = db.Column(db.String(255), nullable=False)  # Increased to 255 for bcrypt hash
     role = db.Column(db.Integer, default=1)  #roles 0 for Admin 1 for User
     full_name = db.Column(db.String(80), nullable=False)
     qualification = db.Column(db.String(80), nullable=False)
     dob = db.Column(db.Date, nullable=False)  #dob
+    is_active = db.Column(db.Boolean, default=True)
     
     # relations define here
     scores = db.relationship("Score", backref="user", lazy=True, cascade="all,delete")
+    
+    def set_password(self, password):
+        """Hash and set password"""
+        self.password = bcrypt.generate_password_hash(password).decode('utf-8')
+    
+    def check_password(self, password):
+        """Verify password"""
+        return bcrypt.check_password_hash(self.password, password)
+    
+    def get_id(self):
+        """Override get_id for Flask-Login"""
+        return str(self.id)
 
 # Subject model
 class Subject(db.Model):
