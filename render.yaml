@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: quizmaster
+    env: python
+    plan: free
+    
+    # Python version
+    pythonVersion: 3.12
+    
+    # Build command - install dependencies
+    buildCommand: pip install -r requirements.txt
+    
+    # Start command - run the Flask app with gunicorn
+    startCommand: gunicorn app:app
+    
+    # Environment variables
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_APP
+        value: app.py
+      - key: FLASK_DEBUG
+        value: 0
+      - key: WTF_CSRF_ENABLED
+        value: true
+      - key: SESSION_COOKIE_SECURE
+        value: true
+      - key: SESSION_COOKIE_HTTPONLY
+        value: true
+      - key: SESSION_COOKIE_SAMESITE
+        value: Lax

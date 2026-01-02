@@ -33,7 +33,8 @@ def setup_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Disable modification tracking
     
     # Security configurations
-    app.config['SESSION_COOKIE_SECURE'] = os.getenv('SESSION_COOKIE_SECURE', 'False') == 'True'  # HTTPS only
+    flask_env = os.getenv('FLASK_ENV', 'development').lower()
+    app.config['SESSION_COOKIE_SECURE'] = flask_env == 'production'  # HTTPS only in production
     app.config['SESSION_COOKIE_HTTPONLY'] = True  # Prevent JavaScript access
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # CSRF protection
     app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hour session timeout
