@@ -30,7 +30,8 @@ def setup_app():
     load_dotenv()
 
     # Set the configuration for SQLAlchemy and secret key from environment variables
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///quizmaster.sqlite3')  # Database URI from .env
+    db_uri = os.getenv('SQLALCHEMY_DATABASE_URI') or os.getenv('DATABASE_URL') or 'sqlite:///quizmaster.sqlite3'
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_uri  # Prefer Render Postgres if provided
     app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'your_default_secret_key_change_this')  # Secret key from .env
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Disable modification tracking
     
