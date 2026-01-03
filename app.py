@@ -5,6 +5,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from dotenv import load_dotenv
 import os
+from sqlalchemy import inspect
 
 # Declare app globally
 app = Flask(__name__)
@@ -43,6 +44,13 @@ def setup_app():
     # Initialize extensions with app
     db.init_app(app)
     bcrypt.init_app(app)
+
+    # Ensure tables exist in environments without a pre-populated database
+    with app.app_context():
+        inspector = inspect(db.engine)
+        if not inspector.has_table('user'):
+            db.create_all()
+            print("Database tables created on startup.")
 
     # User loader for Flask-Login
     @login_manager.user_loader
