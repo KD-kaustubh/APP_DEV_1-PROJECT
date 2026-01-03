@@ -6,6 +6,7 @@ from flask_limiter.util import get_remote_address
 from dotenv import load_dotenv
 import os
 from sqlalchemy import inspect
+from datetime import datetime
 
 # Declare app globally
 app = Flask(__name__)
@@ -51,6 +52,31 @@ def setup_app():
         if not inspector.has_table('user'):
             db.create_all()
             print("Database tables created on startup.")
+
+        # Seed default admin and student if no users exist
+        if User.query.count() == 0:
+            admin = User(
+                username='admin@gmail.com',
+                full_name='Admin User',
+                qualification='Administrator',
+                dob=datetime(2000, 1, 1).date(),
+                role=0
+            )
+            admin.set_password('Admin123')
+
+            student = User(
+                username='student@gmail.com',
+                full_name='Student User',
+                qualification='B.Tech',
+                dob=datetime(2002, 5, 15).date(),
+                role=1
+            )
+            student.set_password('Student123')
+
+            db.session.add(admin)
+            db.session.add(student)
+            db.session.commit()
+            print("Seeded default admin and student users.")
 
     # User loader for Flask-Login
     @login_manager.user_loader
