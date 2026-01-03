@@ -31,6 +31,12 @@ def setup_app():
 
     # Set the configuration for SQLAlchemy and secret key from environment variables
     db_uri = os.getenv('SQLALCHEMY_DATABASE_URI') or os.getenv('DATABASE_URL') or 'sqlite:///quizmaster.sqlite3'
+    # Normalize Postgres URI to use psycopg driver when available
+    if db_uri.startswith('postgres://'):
+        db_uri = db_uri.replace('postgres://', 'postgresql+psycopg://', 1)
+    elif db_uri.startswith('postgresql://') and '+psycopg' not in db_uri:
+        db_uri = db_uri.replace('postgresql://', 'postgresql+psycopg://', 1)
+
     app.config['SQLALCHEMY_DATABASE_URI'] = db_uri  # Prefer Render Postgres if provided
     app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'your_default_secret_key_change_this')  # Secret key from .env
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Disable modification tracking
