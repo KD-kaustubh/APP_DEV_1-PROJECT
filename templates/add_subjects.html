@@ -10,13 +10,28 @@
           </div>
           <div class="card-body">
             <form action="/add_subjects" method="POST">
+              {{ form.hidden_tag() }}
               <div class="mb-3">
-                <label for="subject_name" class="form-label">Subject Name</label>
-                <input type="text" class="form-control" name="subject_name" id="subject_name" placeholder="Subject Name" required>
+                <label for="name" class="form-label">Subject Name</label>
+                {{ form.name(class_="form-control", placeholder="Subject Name") }}
+                {% if form.name.errors %}
+                  <div class="text-danger">
+                    {% for error in form.name.errors %}
+                      <small>{{ error }}</small><br>
+                    {% endfor %}
+                  </div>
+                {% endif %}
               </div>
               <div class="mb-3">
-                <label for="subject_description" class="form-label">Subject Description</label>
-                <input type="text" class="form-control" name="subject_description" id="subject_description" placeholder="Subject Description" required>
+                <label for="description" class="form-label">Subject Description</label>
+                {{ form.description(class_="form-control", placeholder="Subject Description") }}
+                {% if form.description.errors %}
+                  <div class="text-danger">
+                    {% for error in form.description.errors %}
+                      <small>{{ error }}</small><br>
+                    {% endfor %}
+                  </div>
+                {% endif %}
               </div>
               <div class="mb-3 d-flex justify-content-between">
                 <button type="submit" class="btn btn-primary">Submit</button>
